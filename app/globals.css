@@ -351,6 +351,12 @@
   animation: sweep 1.6s var(--ease-standard) 0.6s 1 both, sweep 1.6s var(--ease-standard) 7s infinite;
 }
 
+/* Half-strength sweep for surfaces that sit on screen a lot (the Home "This week" card). */
+.shine-soft::after {
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.06) 50%, transparent 65%);
+  background-size: 250% 100%;
+}
+
 /* Completed-set highlight that runs across the row once. */
 .row-sweep {
   background-image: linear-gradient(100deg, transparent 30%, rgb(75 227 160 / 0.28) 50%, transparent 70%);

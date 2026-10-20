@@ -4,7 +4,8 @@ import { Award, Download, Flame, Lock, Medal, RotateCcw, Trophy } from "lucide-r
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Avatar, Card, PageHeader, SectionTitle } from "@/components/ui/bits";
+import { Card, PageHeader, SectionTitle } from "@/components/ui/bits";
+import { CountUp } from "@/components/ui/motion";
 import { NumberField, Segmented, Toggle } from "@/components/ui/fields";
 import { Sheet } from "@/components/ui/sheet";
 import { allPRs, streakOf, workoutsOf } from "@/lib/data/selectors";
@@ -21,12 +22,14 @@ export default function Me() {
   const streak = streakOf(s, "me", me.sessionsPerWeek);
 
   const badges = [
-    { id: "first", title: "First session", earned: workouts.length >= 1, how: "Log a workout", Icon: Award },
-    { id: "ten", title: "10 sessions", earned: workouts.length >= 10, how: "Log 10 workouts", Icon: Medal },
-    { id: "pr", title: "First PR", earned: prs.length >= 1, how: "Beat a best", Icon: Trophy },
-    { id: "pr10", title: "PR machine", earned: prs.length >= 10, how: "Hit 10 PRs", Icon: Trophy },
-    { id: "streak4", title: "4-week streak", earned: streak >= 4, how: "Meet your weekly goal 4 weeks running", Icon: Flame },
-  ];
+    { id: "first", title: "First session", have: workouts.length, need: 1, unit: "workout", Icon: Award },
+    { id: "ten", title: "10 sessions", have: workouts.length, need: 10, unit: "workouts", Icon: Medal },
+    { id: "fifty", title: "50 sessions", have: workouts.length, need: 50, unit: "workouts", Icon: Medal },
+    { id: "pr", title: "First PR", have: prs.length, need: 1, unit: "PR", Icon: Trophy },
+    { id: "pr10", title: "PR machine", have: prs.length, need: 10, unit: "PRs", Icon: Trophy },
+    { id: "streak4", title: "4-week streak", have: streak, need: 4, unit: "weeks", Icon: Flame },
+  ].map((b) => ({ ...b, earned: b.have >= b.need }));
+  const earnedCount = badges.filter((b) => b.earned).length;
 
   function exportData() {
     const { me: profile, workouts: all, weights, nutrition, customExercises } = useStore.getState();
@@ -45,27 +48,67 @@ export default function Me() {
     <>
       <PageHeader title="Me" />
       <div className="stagger flex flex-col gap-4">
-        <Card className="flex items-center gap-4">
-          <Avatar name={me.name} you />
-          <div className="flex-1">
-            <p className="font-display text-xl font-semibold">{me.name}</p>
-            <p className="text-sm text-muted">
-              {workouts.length} workouts · {prs.length} PRs · {streak}-week streak
-            </p>
+        <section className="card-hero shine shine-soft relative overflow-hidden rounded-xl p-5">
+          <div className="flex items-center gap-4">
+            <span className="rounded-full bg-gradient-to-br from-volt via-accent to-accent-2 p-[3px] shadow-glow">
+              <span className="grid size-16 place-items-center rounded-full bg-surface font-display text-3xl font-bold">{me.name.slice(0, 1)}</span>
+            </span>
+            <div className="flex-1">
+              <p className="font-display text-2xl font-semibold leading-tight">{me.name}</p>
+              <p className="text-sm text-text">
+                {me.goal === "hypertrophy" ? "Building muscle" : me.goal === "strength" ? "Getting stronger" : "Losing fat"} ·{" "}
+                {me.experience}
+              </p>
+            </div>
           </div>
-        </Card>
+          <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
+            {[
+              ["Workouts", workouts.length],
+              ["PRs", prs.length],
+              ["Wk streak", streak],
+            ].map(([k, v]) => (
+              <div key={k as string} className="flex flex-col-reverse rounded-md bg-black/25 p-2.5">
+                <dt className="text-xs text-text">{k}</dt>
+                <dd>
+                  <CountUp value={v as number} className="num-hero text-stat leading-none" />
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
 
         <section>
-          <SectionTitle>Trophy case</SectionTitle>
-          <ul className="grid grid-cols-3 gap-2">
-            {badges.map(({ id, title, earned, how, Icon }) => (
+          <SectionTitle action={<span className="text-sm text-muted">{earnedCount} of {badges.length}</span>}>Trophy case</SectionTitle>
+          <ul className="grid grid-cols-3 gap-x-2 gap-y-4">
+            {badges.map(({ id, title, earned, have, need, unit, Icon }, i) => (
               <li
                 key={id}
-                className={`flex flex-col items-center gap-1 rounded-lg border p-3 text-center ${earned ? "border-accent bg-surface" : "border-border bg-transparent"}`}
+                className="flex flex-col items-center gap-1.5 text-center motion-safe:animate-pop"
+                style={{ animationDelay: `${200 + i * 70}ms` }}
+                aria-label={`${title}: ${earned ? "earned" : `${Math.min(have, need)} of ${need} ${unit}`}`}
               >
-                <Icon aria-hidden className={`size-7 ${earned ? "text-accent" : "text-subtle"}`} />
-                <span className={`text-sm font-medium ${earned ? "" : "text-subtle"}`}>{title}</span>
-                <span className="text-xs text-subtle">{earned ? "Earned" : how}</span>
+                {/* Medallion: metallic ring + inner disc; locked ones are hollow with a progress arc. */}
+                <span
+                  aria-hidden
+                  className={`relative grid size-[4.5rem] place-items-center rounded-full ${
+                    earned
+                      ? "bg-[conic-gradient(from_210deg,var(--color-pr),#fff3c4,var(--color-pr),#b8862a,var(--color-pr))] p-[3px] shadow-[0_8px_26px_-6px_rgb(255_200_87/0.55)]"
+                      : "p-[3px]"
+                  }`}
+                  style={
+                    earned
+                      ? undefined
+                      : { background: `conic-gradient(var(--color-accent) ${Math.min(1, have / need) * 360}deg, var(--color-surface-raised) 0deg)` }
+                  }
+                >
+                  <span
+                    className={`grid size-full place-items-center rounded-full ${earned ? "bg-[radial-gradient(circle_at_35%_30%,#3a2c63,#1b1530)]" : "bg-surface"}`}
+                  >
+                    <Icon className={`size-7 ${earned ? "text-pr drop-shadow-[0_0_8px_rgb(255_200_87/0.6)]" : "text-subtle"}`} />
+                  </span>
+                </span>
+                <span className={`text-sm font-medium leading-tight ${earned ? "" : "text-muted"}`}>{title}</span>
+                <span className="text-xs text-subtle">{earned ? "Earned" : `${Math.min(have, need)} / ${need} ${unit}`}</span>
               </li>
             ))}
           </ul>

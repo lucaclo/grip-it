@@ -2,10 +2,11 @@
 
 import { Lock } from "lucide-react";
 import { useMemo, useState } from "react";
-import { CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Card, Citations, PageHeader, ProgressRing, SectionTitle } from "@/components/ui/bits";
 import { NumberField } from "@/components/ui/fields";
+import { CountUp } from "@/components/ui/motion";
 import { latestWeight, myTargets } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
 
@@ -61,20 +62,47 @@ export default function Body() {
           </div>
           {data.length >= 2 ? (
             <>
-              <p className="mt-4 text-sm text-muted">
-                7-day average <span className="tabular text-text">{last.avg} kg</span>, {change >= 0 ? "+" : ""}
-                {change} kg since you started. Target <span className="tabular text-text">{s.me?.targetWeightKg} kg</span>.
-              </p>
-              <div className="mt-2 h-48" aria-hidden>
+              <dl className="mt-4 grid grid-cols-3 gap-2">
+                {[
+                  ["7-day avg", <CountUp key="a" value={last.avg} decimals={1} suffix=" kg" />],
+                  ["Since start", `${change >= 0 ? "+" : ""}${change} kg`],
+                  ["To goal", s.me ? `${Math.abs(Math.round((s.me.targetWeightKg - last.avg) * 10) / 10)} kg` : "—"],
+                ].map(([k, v]) => (
+                  <div key={k as string} className="rounded-md bg-surface-raised/70 p-2.5">
+                    <dt className="text-xs text-subtle">{k}</dt>
+                    <dd className="num-hero text-lg leading-tight">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+              <div className="mt-3 h-52" aria-hidden>
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                    <CartesianGrid stroke="var(--color-border)" vertical={false} />
+                    <defs>
+                      <linearGradient id="weight-fill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--color-accent)" stopOpacity={0.45} />
+                        <stop offset="100%" stopColor="var(--color-accent-2)" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="weight-line" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="var(--color-accent)" />
+                        <stop offset="100%" stopColor="var(--color-accent-2)" />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid stroke="var(--color-border)" strokeDasharray="2 6" vertical={false} />
                     <XAxis dataKey="day" tick={{ fill: "var(--color-subtle)", fontSize: 12 }} tickLine={false} axisLine={false} />
                     <YAxis domain={["dataMin - 1", "dataMax + 1"]} tick={{ fill: "var(--color-subtle)", fontSize: 12 }} tickLine={false} axisLine={false} />
                     <Tooltip contentStyle={{ background: "var(--color-surface-raised)", border: "1px solid var(--color-border)", borderRadius: 8 }} />
                     {s.me && <ReferenceLine y={s.me.targetWeightKg} stroke="var(--color-muted)" strokeDasharray="4 4" />}
+                    <Area dataKey="avg" type="monotone" fill="url(#weight-fill)" stroke="none" animationDuration={1200} />
                     <Scatter dataKey="kg" fill="var(--color-subtle)" />
-                    <Line dataKey="avg" stroke="var(--color-accent)" strokeWidth={3} dot={false} type="monotone" />
+                    <Line
+                      dataKey="avg"
+                      stroke="url(#weight-line)"
+                      strokeWidth={3.5}
+                      dot={false}
+                      type="monotone"
+                      animationDuration={1400}
+                      style={{ filter: "drop-shadow(0 0 8px rgb(183 156 255 / 0.6))" }}
+                    />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>

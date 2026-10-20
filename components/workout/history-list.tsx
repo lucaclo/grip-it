@@ -49,7 +49,7 @@ export function HistoryList() {
                         {w.isPrivate && <EyeOff aria-label="Private" className="size-4 shrink-0 text-subtle" />}
                       </span>
                       <span className="tabular block text-sm text-muted">
-                        {w.exercises.length} exercises · {sets} sets · {Math.round(volumeKg(w)).toLocaleString("en-GB")} kg
+                        {w.exercises.length} exercise{w.exercises.length === 1 ? "" : "s"} · {sets} set{sets === 1 ? "" : "s"} · {Math.round(volumeKg(w)).toLocaleString("en-GB")} kg
                       </span>
                     </span>
                     {prs > 0 && (

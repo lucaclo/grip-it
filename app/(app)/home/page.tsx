@@ -72,7 +72,7 @@ export default function Home() {
         )}
 
         <Link href="/compete" transitionTypes={["tab-forward"]}
-          className="card-hero shine press relative overflow-hidden rounded-xl p-5" aria-label={`This week: rank ${myRow?.rank ?? "none"}, ${streak}-week streak, ${hard} hard sets`}>
+          className="card-hero shine shine-soft press relative overflow-hidden rounded-xl p-5" aria-label={`This week: rank ${myRow?.rank ?? "none"}, ${streak}-week streak, ${hard} hard sets`}>
           <p className="text-xs font-semibold uppercase tracking-widest text-text">This week</p>
           <div className="mt-1 flex items-end gap-2">
             {myRow?.rank ? <CountUp value={myRow.rank} prefix="#" className="num-hero text-[4.5rem] leading-none" /> : <span className="num-hero text-[4.5rem] leading-none">—</span>}
