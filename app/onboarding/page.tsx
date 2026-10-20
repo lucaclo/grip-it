@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowLeft, Dumbbell, Flame, Gauge, Lock, TriangleAlert } from "lucide-react";
+import { ArrowLeft, Flame, Gauge, Lock, TriangleAlert } from "lucide-react";
+import { BarbellIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -235,7 +236,7 @@ export default function Onboarding() {
               <p className="text-sm text-muted">kcal per day</p>
             </Card>
             <Card>
-              <Dumbbell aria-hidden className="size-5 text-accent" />
+              <BarbellIcon aria-hidden className="size-5 text-accent" />
               <p className="mt-2 tabular text-stat font-semibold">{plan.proteinG} g</p>
               <p className="text-sm text-muted">protein per day</p>
             </Card>

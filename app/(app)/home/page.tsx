@@ -1,13 +1,13 @@
 "use client";
 
-import { ChevronRight, Dumbbell, Flame, Scale, Trophy } from "lucide-react";
+import { ChevronRight, Flame, Scale, Trophy } from "lucide-react";
+import { BarbellIcon } from "@/components/icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, PageHeader, ProgressRing, SectionTitle } from "@/components/ui/bits";
 import { CountUp } from "@/components/ui/motion";
-import { Plate3D } from "@/components/plate-3d";
 import { leaderboard, myTargets, streakOf, weekStart, weeklyHardSets, weeklyVolume } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
 import { MUSCLE_LABEL, MUSCLES, VOLUME_BAND, volumeStatus } from "@/lib/science/volume";
@@ -21,6 +21,7 @@ export default function Home() {
   const n = s.nutrition.find((x) => x.day === today);
   const streak = streakOf(s, "me", me.sessionsPerWeek);
   const hard = weeklyHardSets(s, "me");
+  const sessionsThisWeek = s.workouts.filter((w) => w.userId === "me" && Date.parse(w.startedAt) >= weekStart().getTime()).length;
   const [now] = useState(() => new Date());
   // Mon–Sun of this week, marking days with at least one workout.
   const week = useMemo(() => {
@@ -56,7 +57,7 @@ export default function Home() {
       <div className="stagger flex flex-col gap-4">
         {s.draft ? (
           <ButtonLink href="/log" size="lg" className="w-full">
-            <Dumbbell aria-hidden className="size-5" /> Resume workout
+            <BarbellIcon aria-hidden className="size-5" /> Resume workout
           </ButtonLink>
         ) : (
           <Button
@@ -67,7 +68,7 @@ export default function Home() {
               router.push("/log");
             }}
           >
-            <Dumbbell aria-hidden className="size-5" /> Start workout
+            <BarbellIcon aria-hidden className="size-5" /> Start workout
           </Button>
         )}
 
@@ -96,7 +97,7 @@ export default function Home() {
                   }`}
                   aria-hidden
                 >
-                  {d.trained ? <Dumbbell className="size-4" /> : <span className={`size-1.5 rounded-full ${d.today ? "bg-text" : "bg-text/40"}`} />}
+                  {d.trained ? <BarbellIcon className="size-5" strokeWidth={2.2} /> : <span className={`size-1.5 rounded-full ${d.today ? "bg-text" : "bg-text/40"}`} />}
                 </span>
                 <span aria-hidden className={`text-[0.6875rem] ${d.today ? "font-semibold text-text" : "text-text"}`}>
                   {d.letter}
@@ -116,7 +117,7 @@ export default function Home() {
               <p className="text-xs text-text">hard sets</p>
             </div>
           </div>
-          <Plate3D size={104} className="absolute top-5 right-5" />
+          <GoalRing done={sessionsThisWeek} goal={me.sessionsPerWeek} className="absolute top-5 right-5" />
         </Link>
 
         <Card>
@@ -177,5 +178,68 @@ export default function Home() {
         </Link>
       </div>
     </>
+  );
+}
+
+/** This week's sessions against your own target: fills on load and breathes once the goal is met. */
+function GoalRing({ done, goal, className = "" }: { done: number; goal: number; className?: string }) {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  const size = 104;
+  const r = 42;
+  const c = 2 * Math.PI * r;
+  const pct = Math.min(1, done / Math.max(1, goal));
+  const met = done >= goal;
+  return (
+    <div className={className} role="img" aria-label={`${done} of ${goal} sessions this week${met ? ", goal met" : ""}`}>
+      <div className={`relative ${met ? "motion-safe:animate-[breathe_3s_ease-in-out_infinite]" : ""}`} style={{ width: size, height: size }}>
+        <svg width={size} height={size} viewBox="0 0 104 104" className="-rotate-90" aria-hidden>
+          <defs>
+            <linearGradient id="goal-ring" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="var(--color-volt)" />
+              <stop offset="100%" stopColor="#9fd12a" />
+            </linearGradient>
+          </defs>
+          <circle cx="52" cy="52" r={r} fill="none" stroke="rgb(0 0 0 / 0.3)" strokeWidth="9" />
+          {/* one tick per planned session */}
+          {Array.from({ length: goal }, (_, i) => (
+            <line
+              key={i}
+              x1="52"
+              y1="4"
+              x2="52"
+              y2="12"
+              stroke="rgb(255 255 255 / 0.35)"
+              strokeWidth="2"
+              transform={`rotate(${(i / goal) * 360} 52 52)`}
+            />
+          ))}
+          <circle
+            cx="52"
+            cy="52"
+            r={r}
+            fill="none"
+            stroke="url(#goal-ring)"
+            strokeWidth="9"
+            strokeLinecap="round"
+            strokeDasharray={c}
+            strokeDashoffset={shown ? c * (1 - pct) : c}
+            className="drop-shadow-[0_0_10px_rgb(212_255_58/0.55)] transition-[stroke-dashoffset] duration-[1400ms] ease-[var(--ease-expo)]"
+          />
+        </svg>
+        <div className="absolute inset-0 grid place-items-center text-center">
+          <div>
+            <span className="num-hero text-3xl leading-none">
+              <CountUp value={done} />
+              <span className="text-lg text-text">/{goal}</span>
+            </span>
+            <span className="block text-[0.6875rem] uppercase tracking-wider text-text">{met ? "goal hit" : "sessions"}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

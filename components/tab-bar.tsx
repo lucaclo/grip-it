@@ -1,13 +1,14 @@
 "use client";
 
-import { Dumbbell, House, Newspaper, Trophy, UserRound } from "lucide-react";
+import { House, Newspaper, Trophy, UserRound } from "lucide-react";
+import { BarbellIcon } from "@/components/icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/data/store";
 
 const TABS = [
   { href: "/home", label: "Home", Icon: House },
-  { href: "/log", label: "Log", Icon: Dumbbell },
+  { href: "/log", label: "Log", Icon: BarbellIcon },
   { href: "/compete", label: "Compete", Icon: Trophy },
   { href: "/feed", label: "Feed", Icon: Newspaper },
   { href: "/me", label: "Me", Icon: UserRound },

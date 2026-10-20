@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2c2148"/>
+      <stop offset="1" stop-color="#16141f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.3" cy="0.25" r="0.8">
+      <stop offset="0" stop-color="#7c5cff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#7c5cff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#cdb8ff"/>
+      <stop offset="0.5" stop-color="#b79cff"/>
+      <stop offset="1" stop-color="#e58bff"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#glow)"/>
+  <!-- G: a plate ring with a gap at the upper right -->
+  <circle cx="256" cy="256" r="148" fill="none" stroke="url(#ring)" stroke-width="62" stroke-linecap="round"
+          stroke-dasharray="780.1 929.9" transform="rotate(8 256 256)"/>
+  <!-- inner plate rim -->
+  <circle cx="256" cy="256" r="96" fill="none" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+  <!-- crossbar: the lime grip -->
+  <rect x="250" y="231" width="172" height="50" rx="25" fill="#d4ff3a"/>
+  <rect x="250" y="231" width="172" height="18" rx="9" fill="#ffffff" fill-opacity="0.35"/>
+  <!-- hub -->
+  <circle cx="256" cy="256" r="34" fill="#f6f4fb"/>
+  <circle cx="256" cy="256" r="16" fill="#2c2148"/>
+</svg>

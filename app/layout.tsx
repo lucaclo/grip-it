@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow, Barlow_Condensed } from "next/font/google";
+import { Aurora } from "@/components/aurora";
 import "./globals.css";
 
 const barlow = Barlow({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-barlow" });
@@ -27,7 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en-GB" className={`${barlow.variable} ${barlowCondensed.variable}`}>
       <body className="min-h-dvh antialiased">
-        <div className="aurora" aria-hidden />
+        <Aurora />
         <div className="grain" aria-hidden />
         {children}
       </body>

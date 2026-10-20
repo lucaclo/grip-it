@@ -191,7 +191,7 @@
   background-image:
     radial-gradient(120% 90% at 0% 0%, rgb(124 92 255 / 0.75), transparent 58%),
     radial-gradient(90% 80% at 100% 10%, rgb(212 92 255 / 0.55), transparent 62%),
-    radial-gradient(80% 70% at 60% 120%, rgb(61 123 255 / 0.35), transparent 60%);
+    radial-gradient(80% 70% at 60% 120%, rgb(162 60 240 / 0.3), transparent 60%);
   border: 1px solid rgb(255 255 255 / 0.1);
   box-shadow: var(--shadow-card);
 }
@@ -211,34 +211,78 @@
   overflow: hidden;
   background: var(--color-bg);
 }
-.aurora::before,
-.aurora::after {
-  content: "";
+/* Four colour fields on their own orbits, a slow hue shift, and scroll parallax (see components/aurora.tsx). */
+.aurora {
+  animation: hue 40s ease-in-out infinite alternate;
+}
+.aurora .blob {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(80px);
+  filter: blur(70px);
+  will-change: transform;
+}
+.aurora .b1 {
+  width: 75vmax; height: 75vmax; top: -30vmax; left: -30vmax;
+  background: radial-gradient(circle, #7b48f5 0%, transparent 62%);
+  opacity: 0.75;
+  animation: orbit-a 18s ease-in-out infinite;
+}
+.aurora .b2 {
+  width: 62vmax; height: 62vmax; top: 25vh; right: -32vmax;
+  background: radial-gradient(circle, #c44bff 0%, transparent 62%);
   opacity: 0.55;
+  animation: orbit-b 22s ease-in-out infinite;
 }
-.aurora::before {
-  width: 70vmax;
-  height: 70vmax;
-  top: -35vmax;
-  left: -25vmax;
-  background: radial-gradient(circle, #6d4aff 0%, transparent 65%);
-  animation: drift 26s ease-in-out infinite alternate;
+.aurora .b3 {
+  width: 50vmax; height: 50vmax; bottom: -22vmax; left: -10vmax;
+  background: radial-gradient(circle, #a23cf0 0%, transparent 62%);
+  opacity: 0.4;
+  animation: orbit-c 26s ease-in-out infinite;
 }
-.aurora::after {
-  width: 60vmax;
-  height: 60vmax;
-  top: 30vh;
-  right: -30vmax;
-  background: radial-gradient(circle, #c44bff 0%, transparent 65%);
-  opacity: 0.35;
-  animation: drift 32s ease-in-out infinite alternate-reverse;
+.aurora .b4 {
+  width: 30vmax; height: 30vmax; top: 45vh; left: 30vw;
+  background: radial-gradient(circle, #9fd12a 0%, transparent 60%);
+  opacity: 0.16;
+  animation: orbit-d 30s ease-in-out infinite;
 }
-@keyframes drift {
-  from { transform: translate3d(0, 0, 0) scale(1); }
-  to { transform: translate3d(6vmax, 4vmax, 0) scale(1.12); }
+@keyframes orbit-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(18vmax, 10vmax, 0) scale(1.15); }
+  66% { transform: translate3d(6vmax, 22vmax, 0) scale(0.92); }
+}
+@keyframes orbit-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  40% { transform: translate3d(-20vmax, -14vmax, 0) scale(1.2); }
+  70% { transform: translate3d(-8vmax, 10vmax, 0) scale(0.9); }
+}
+@keyframes orbit-c {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(24vmax, -18vmax, 0) scale(1.25); }
+}
+@keyframes orbit-d {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  25% { transform: translate3d(-22vw, -20vh, 0) scale(1.3); }
+  75% { transform: translate3d(18vw, 14vh, 0) scale(0.8); }
+}
+@keyframes breathe {
+  0%, 100% { scale: 1; filter: drop-shadow(0 0 0 rgb(212 255 58 / 0)); }
+  50% { scale: 1.05; filter: drop-shadow(0 0 14px rgb(212 255 58 / 0.45)); }
+}
+@keyframes hue {
+  from { filter: hue-rotate(0deg); }
+  to { filter: hue-rotate(22deg); }
+}
+/* Parallax: the whole field slides up a little as the page scrolls. */
+@supports (animation-timeline: scroll()) {
+  .aurora .layer {
+    position: absolute;
+    inset: -20vh 0;
+    animation: parallax linear both;
+    animation-timeline: scroll(root);
+  }
+  @keyframes parallax {
+    to { transform: translate3d(0, -14vh, 0); }
+  }
 }
 /* Film grain over the glows: breaks up gradient banding and adds texture. */
 .aurora {
@@ -375,8 +419,7 @@
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  .aurora::before,
-  .aurora::after,
+  .aurora .blob,
   .grain { display: none; }
 }
 

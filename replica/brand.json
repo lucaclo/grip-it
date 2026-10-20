@@ -1,0 +1,6 @@
+{
+  "name": "Grip It",
+  "avoid": ["Hevy", "Fitbod", "RP Hypertrophy", "Renaissance Periodization", "MacroFactor", "Strava", "Strong app"],
+  "domains": ["hevyapp.com", "fitbod.me", "rpstrength.com", "macrofactor.com", "macrofactorapp.com", "strava.com"],
+  "colors": ["#FC4C02"]
+}
