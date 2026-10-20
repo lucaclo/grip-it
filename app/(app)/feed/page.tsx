@@ -98,7 +98,7 @@ export default function Feed() {
                       aria-pressed={on}
                       aria-label={`${label}, ${count}`}
                       onClick={() => s.toggleReaction(it.id, code)}
-                      className={`flex min-h-10 min-w-11 items-center justify-center gap-1 rounded-full border px-2.5 text-sm transition-transform active:scale-90 ${on ? "border-accent bg-accent text-on-accent" : "border-border text-muted"}`}
+                      className={`flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-full border px-2.5 text-sm transition-transform active:scale-90 ${on ? "border-accent bg-accent text-on-accent" : "border-border text-muted"}`}
                     >
                       <Icon aria-hidden className="size-4" />
                       {count > 0 && <span className="tabular">{count}</span>}

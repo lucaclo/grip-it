@@ -67,6 +67,11 @@
     color-scheme: dark;
   }
 
+  /* Follow the iPhone's text-size setting (Dynamic Type) in Safari; rem sizes then scale with it. */
+  html {
+    font: -apple-system-body;
+  }
+
   html,
   body {
     background: var(--color-bg);

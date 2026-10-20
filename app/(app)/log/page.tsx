@@ -235,12 +235,11 @@ function ExerciseCard({ index, name, muscle, exerciseId }: { index: number; name
             >
               <button
                 type="button"
-                onClick={() => removeSet(index, j)}
-                aria-label={`Delete set ${j + 1}`}
-                className="tabular text-left text-base text-muted"
-                title="Tap to delete"
+                onClick={() => updateSet(index, j, { type: NEXT_TYPE[set.type] })}
+                aria-label={`Set ${j + 1}, ${TYPE_NAME[set.type]}. Tap to change type`}
+                className={`tabular -ml-2 grid h-11 w-10 place-items-center text-base ${set.type === "failure" ? "text-danger" : set.type === "normal" ? "text-muted" : "text-warning"}`}
               >
-                {set.type === "warmup" ? "W" : j + 1}
+                {TYPE_SHORT[set.type] ?? j + 1}
               </button>
               <span className="tabular truncate text-sm text-subtle">{prev ? `${prev.kg} × ${prev.reps}` : "—"}</span>
               <SetInput label={`Set ${j + 1} kilograms`} value={set.kg} decimal onChange={(v) => updateSet(index, j, { kg: v ?? 0 })} />
@@ -266,16 +265,15 @@ function ExerciseCard({ index, name, muscle, exerciseId }: { index: number; name
 
       <Sheet open={menu} onClose={() => setMenu(false)} title={name}>
         <div className="flex flex-col gap-2">
-          <Button
-            variant="secondary"
-            onClick={() => {
-              const set = e.sets[0];
-              if (set) updateSet(index, 0, { type: set.type === "warmup" ? "normal" : "warmup" });
-              setMenu(false);
-            }}
-          >
-            Toggle first set as warm-up
-          </Button>
+          <p className="text-sm text-subtle">Tap a set number to mark it as a warm-up (W), drop set (D) or to failure (F).</p>
+          {e.sets.map((set, j) => (
+            <Button key={j} variant="secondary" onClick={() => removeSet(index, j)}>
+              <Trash2 aria-hidden className="size-4" /> Delete set {j + 1}
+              <span className="tabular text-subtle">
+                {set.kg} kg × {set.reps}
+              </span>
+            </Button>
+          ))}
           <Button
             variant="danger"
             onClick={() => {
@@ -290,6 +288,10 @@ function ExerciseCard({ index, name, muscle, exerciseId }: { index: number; name
     </section>
   );
 }
+
+const NEXT_TYPE = { normal: "warmup", warmup: "drop", drop: "failure", failure: "normal" } as const;
+const TYPE_NAME = { normal: "normal set", warmup: "warm-up", drop: "drop set", failure: "to failure" } as const;
+const TYPE_SHORT: Partial<Record<keyof typeof NEXT_TYPE, string>> = { warmup: "W", drop: "D", failure: "F" };
 
 function SetInput({
   label,
