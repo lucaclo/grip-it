@@ -1,0 +1,21 @@
+# dependencies
+node_modules/
+# next.js
+.next/
+out/
+# env and secrets: never commit
+.env
+.env*.local
+.env.*
+!.env.example
+# testing
+coverage/
+playwright-report/
+test-results/
+# misc
+.DS_Store
+*.log
+.vercel
+# reference screenshots of other apps: never shipped, never published
+replica/screens/*
+!replica/screens/.gitkeep

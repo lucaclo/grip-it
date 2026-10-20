@@ -1,0 +1,86 @@
+/* Grip It design tokens, generated from tokens.json (keep in sync; contrast-check tokens.json).
+   Tailwind v4: this file is imported from app/globals.css after `@import "tailwindcss";`.
+   Components use roles only (bg-surface, text-muted, border-input), never raw hex. */
+
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap");
+/* In the app, load these with next/font/google instead of @import (self-hosted, no layout shift). */
+
+@theme {
+  --color-bg: #0b0b0d;
+  --color-surface: #16171b;
+  --color-surface-raised: #202228;
+  --color-border: #2e3139;
+  --color-border-input: #70757f;
+  --color-text: #f4f4f2;
+  --color-muted: #a3a6ae;
+  --color-subtle: #868a93;
+  --color-accent: #d4ff3a;
+  --color-on-accent: #0b0b0d;
+  --color-danger: #ff6369;
+  --color-on-danger: #0b0b0d;
+  --color-success: #3ddc97;
+  --color-warning: #ffc53d;
+  --color-pr: #ffc53d;
+  --color-on-pr: #0b0b0d;
+  --color-rank-gold: #ffc53d;
+  --color-rank-silver: #c9cdd4;
+  --color-rank-bronze: #e0915a;
+  --color-focus: #d4ff3a;
+
+  --font-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-sans: Barlow, system-ui, -apple-system, sans-serif;
+  --font-numeric: "Barlow Condensed", system-ui, sans-serif;
+
+  --text-xs: 0.75rem;     --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;    --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;      --text-base--line-height: 1.5rem;
+  --text-lg: 1.25rem;     --text-lg--line-height: 1.625rem;
+  --text-xl: 1.75rem;     --text-xl--line-height: 2rem;
+  --text-display: 2.5rem; --text-display--line-height: 2.75rem;
+  --text-stat: 2rem;      --text-stat--line-height: 2.25rem;
+
+  --spacing: 4px; /* Tailwind multiplies: p-4 = 16px. Scale used: 0,1,2,3,4,5,6,8,12,16 */
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  --shadow-card: 0 0 0 1px #2e3139;
+  --shadow-pop: 0 16px 40px rgb(0 0 0 / 0.55);
+
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:root {
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --layout-max: 480px;
+  --gutter: 16px;
+  --tab-bar-h: 56px;
+  --header-h: 52px;
+  --touch-min: 44px;
+  --set-row-h: 52px;
+  color-scheme: dark;
+}
+
+html, body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tabular { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; }
+
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
