@@ -18,7 +18,11 @@ export function TabBar() {
   const active = useStore((s) => !!s.draft);
   const activeIndex = TABS.findIndex(({ href }) => path === href || path.startsWith(href + "/"));
   return (
-    <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-20 px-3 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]">
+    <nav
+      aria-label="Main"
+      style={{ viewTransitionName: "tab-bar" }}
+      className="fixed inset-x-0 bottom-0 z-20 px-3 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]"
+    >
       <ul className="glass relative mx-auto flex h-16 max-w-[460px] rounded-[26px] border border-white/10 px-1 shadow-[0_18px_40px_-12px_rgb(0_0_0/0.7),0_0_0_1px_rgb(183_156_255/0.08)]">
         {activeIndex >= 0 && (
           <span
@@ -33,6 +37,7 @@ export function TabBar() {
             <li key={href} className="relative flex-1">
               <Link
                 href={href}
+                transitionTypes={[TABS.findIndex((t) => t.href === href) >= activeIndex ? "tab-forward" : "tab-back"]}
                 aria-current={on ? "page" : undefined}
                 className={`relative flex h-full flex-col items-center justify-center gap-0.5 text-xs font-medium transition-colors ${on ? "text-text" : "text-muted"}`}
               >

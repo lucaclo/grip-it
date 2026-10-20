@@ -3,7 +3,6 @@
 import {
   CalendarClock,
   Check,
-  Dumbbell,
   EllipsisVertical,
   Minus,
   Plus,
@@ -19,6 +18,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { ExerciseSearch } from "@/components/workout/exercise-search";
 import { HistoryList } from "@/components/workout/history-list";
 import { PlateBar } from "@/components/plate-bar";
+import { Plate3D } from "@/components/plate-3d";
 import { RestTimer } from "@/components/workout/rest-timer";
 import {
   exerciseMap,
@@ -97,7 +97,7 @@ export default function LogPage() {
           subtitle="Start a session, or open a past one to view or edit it."
         />
         <div className="card-hero mb-6 flex flex-col items-center gap-3 rounded-xl px-5 py-6 text-center">
-          <Dumbbell aria-hidden className="size-9 text-volt" />
+          <Plate3D size={132} className="my-3" />
           <p className="max-w-xs text-sm text-text">
             Your session saves on your phone after every set, so nothing is lost
             if you close the app.

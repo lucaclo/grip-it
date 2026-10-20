@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, PageHeader, ProgressRing, SectionTitle } from "@/components/ui/bits";
 import { CountUp } from "@/components/ui/motion";
+import { Plate3D } from "@/components/plate-3d";
 import { leaderboard, myTargets, streakOf, weekStart, weeklyHardSets, weeklyVolume } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
 import { MUSCLE_LABEL, MUSCLES, VOLUME_BAND, volumeStatus } from "@/lib/science/volume";
@@ -70,7 +71,8 @@ export default function Home() {
           </Button>
         )}
 
-        <Link href="/compete" className="card-hero shine relative overflow-hidden rounded-xl p-5" aria-label={`This week: rank ${myRow?.rank ?? "none"}, ${streak}-week streak, ${hard} hard sets`}>
+        <Link href="/compete" transitionTypes={["tab-forward"]}
+          className="card-hero shine press relative overflow-hidden rounded-xl p-5" aria-label={`This week: rank ${myRow?.rank ?? "none"}, ${streak}-week streak, ${hard} hard sets`}>
           <p className="text-xs font-semibold uppercase tracking-widest text-text">This week</p>
           <div className="mt-1 flex items-end gap-2">
             {myRow?.rank ? <CountUp value={myRow.rank} prefix="#" className="num-hero text-[4.5rem] leading-none" /> : <span className="num-hero text-[4.5rem] leading-none">—</span>}
@@ -114,13 +116,13 @@ export default function Home() {
               <p className="text-xs text-text">hard sets</p>
             </div>
           </div>
-          <ChevronRight aria-hidden className="absolute top-5 right-4 size-5 text-text" />
+          <Plate3D size={104} className="absolute top-5 right-5" />
         </Link>
 
         <Card>
           <SectionTitle
             action={
-              <Link href="/body" className="flex min-h-11 items-center gap-1 text-sm text-accent">
+              <Link href="/body" transitionTypes={["drill-in"]} className="press flex min-h-11 items-center gap-1 text-sm text-accent">
                 Log <ChevronRight aria-hidden className="size-4" />
               </Link>
             }
@@ -140,7 +142,7 @@ export default function Home() {
         <Card>
           <SectionTitle
             action={
-              <Link href="/volume" className="flex min-h-11 items-center gap-1 text-sm text-accent">
+              <Link href="/volume" transitionTypes={["drill-in"]} className="press flex min-h-11 items-center gap-1 text-sm text-accent">
                 All muscles <ChevronRight aria-hidden className="size-4" />
               </Link>
             }
@@ -168,7 +170,7 @@ export default function Home() {
           )}
         </Card>
 
-        <Link href="/body" className="flex min-h-14 items-center gap-3 card rounded-lg px-4">
+        <Link href="/body" transitionTypes={["drill-in"]} className="press flex min-h-14 items-center gap-3 card rounded-lg px-4">
           <Scale aria-hidden className="size-5 text-accent" />
           <span className="flex-1">Body weight and nutrition</span>
           <ChevronRight aria-hidden className="size-5 text-subtle" />

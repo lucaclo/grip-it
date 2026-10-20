@@ -22,10 +22,23 @@ export function SectionTitle({ children, action }: { children: ReactNode; action
 export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
   return (
     <header className="pt-safe">
-      <div className="flex items-end gap-3 pt-5 pb-4 motion-safe:animate-enter">
+      <div className="flex items-end gap-3 pt-5 pb-4">
         <div className="flex-1">
-          <h1 className="text-brand font-display text-display font-bold uppercase leading-none">{title}</h1>
-          {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
+          {/* Masked word reveal: each word slides up from behind its own clip. */}
+          <h1 className="font-display text-display font-bold uppercase leading-none" aria-label={title}>
+            {title.split(" ").map((w, i) => (
+              <span key={i} aria-hidden className="mr-[0.22em] inline-block overflow-hidden pb-[0.06em] align-bottom last:mr-0">
+                <span className="text-brand inline-block motion-safe:animate-word" style={{ animationDelay: `${i * 90}ms` }}>
+                  {w}
+                </span>
+              </span>
+            ))}
+          </h1>
+          {subtitle && (
+            <p className="mt-1 text-sm text-muted motion-safe:animate-enter" style={{ animationDelay: "220ms" }}>
+              {subtitle}
+            </p>
+          )}
         </div>
         {action}
       </div>

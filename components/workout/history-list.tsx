@@ -38,7 +38,7 @@ export function HistoryList() {
               const prs = prCount.get(w.id) ?? 0;
               return (
                 <li key={w.id}>
-                  <Link href={`/workout/${w.id}`} className="flex min-h-16 items-center gap-3 px-4 py-3">
+                  <Link href={`/workout/${w.id}`} transitionTypes={["drill-in"]} className="press flex min-h-16 items-center gap-3 px-4 py-3">
                     <span className="grid w-10 shrink-0 text-center leading-none">
                       <span className="tabular text-xl font-semibold">{d.getDate()}</span>
                       <span className="text-xs uppercase text-subtle">{d.toLocaleDateString("en-GB", { weekday: "short" })}</span>

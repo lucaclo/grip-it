@@ -78,7 +78,7 @@ export default function Feed() {
                   )}
                 </div>
               ) : (
-                <Link href={`/workout/${it.workout.id}`} className="mt-3 block rounded-md bg-surface-raised p-3">
+                <Link href={`/workout/${it.workout.id}`} transitionTypes={["drill-in"]} className="press mt-3 block rounded-md bg-surface-raised p-3">
                   <p className="font-display text-lg font-semibold">{it.workout.title}</p>
                   <p className="tabular text-sm text-muted">
                     {it.workout.exercises.length} exercises · {it.workout.exercises.reduce((a, e) => a + e.sets.length, 0)} sets ·{" "}

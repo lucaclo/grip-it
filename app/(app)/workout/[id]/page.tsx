@@ -124,7 +124,7 @@ export default function WorkoutSummary() {
       <SectionTitle>Exercises</SectionTitle>
       <Card className="mb-4 flex flex-col divide-y divide-border p-0">
         {w.exercises.map((e) => (
-          <Link key={e.exerciseId} href={`/exercises/${e.exerciseId}`} className="flex min-h-14 items-center gap-3 px-4 py-2">
+          <Link key={e.exerciseId} href={`/exercises/${e.exerciseId}`} transitionTypes={["drill-in"]} className="press flex min-h-14 items-center gap-3 px-4 py-2">
             <span className="flex-1">
               <span className="block">{ex.get(e.exerciseId)?.name}</span>
               <span className="tabular block text-sm text-subtle">{e.sets.map((x) => `${x.kg}×${x.reps}`).join("  ")}</span>
