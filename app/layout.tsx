@@ -6,6 +6,7 @@ const barlow = Barlow({ subsets: ["latin"], weight: ["400", "500", "600"], varia
 const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
+  style: ["normal", "italic"],
   variable: "--font-barlow-condensed",
 });
 
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en-GB" className={`${barlow.variable} ${barlowCondensed.variable}`}>
       <body className="min-h-dvh antialiased">
         <div className="aurora" aria-hidden />
+        <div className="grain" aria-hidden />
         {children}
       </body>
     </html>

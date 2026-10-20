@@ -18,7 +18,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (!hydrated || !onboarded) return <div className="min-h-dvh" aria-busy />;
   return (
     <>
-      <main className="mx-auto max-w-[480px] px-4 pb-[calc(env(safe-area-inset-bottom)+5.5rem)]">{children}</main>
+      <main className="mx-auto max-w-[480px] px-4 pb-[calc(env(safe-area-inset-bottom)+6.5rem)]">{children}</main>
       <TabBar />
     </>
   );

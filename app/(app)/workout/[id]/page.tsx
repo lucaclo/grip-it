@@ -49,7 +49,7 @@ export default function WorkoutSummary() {
             {prs.map((p) => (
               <li key={p.id} className="flex justify-between gap-2 text-base">
                 <span>{ex.get(p.exerciseId)?.name}</span>
-                <span className="tabular font-semibold">
+                <span className="num-hero text-lg">
                   {p.kg} × {p.reps} · e1RM {p.e1rm} kg
                 </span>
               </li>

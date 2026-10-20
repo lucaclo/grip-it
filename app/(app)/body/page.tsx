@@ -121,7 +121,7 @@ export default function Body() {
           <Lock aria-hidden className="size-4" /> Friends can&apos;t see this page. DOTS uses your weight without showing it.
         </p>
       </div>
-      <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-30 flex justify-center">
+      <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+5.75rem)] z-30 flex justify-center">
         {saved && <span className="rounded-full bg-success px-4 py-2 text-sm font-semibold text-on-accent motion-safe:animate-rise">{saved}</span>}
       </div>
     </>

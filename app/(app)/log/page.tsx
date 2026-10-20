@@ -17,6 +17,7 @@ import { NumberField, Toggle } from "@/components/ui/fields";
 import { Sheet } from "@/components/ui/sheet";
 import { ExerciseSearch } from "@/components/workout/exercise-search";
 import { HistoryList } from "@/components/workout/history-list";
+import { PlateBar } from "@/components/plate-bar";
 import {
   exerciseMap,
   historyFor,
@@ -243,7 +244,7 @@ export default function LogPage() {
         </Button>
       </div>
 
-      <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+3.5rem)] z-10 mx-auto max-w-[480px] px-4 pb-3">
+      <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.75rem)] z-10 mx-auto max-w-[480px] px-4 pb-3">
         {doneSets === 0 && draft.exercises.length > 0 && !draft.autoTick && (
           <p className="mb-2 text-center text-sm text-muted">
             Tap{" "}
@@ -264,7 +265,7 @@ export default function LogPage() {
           <Check aria-hidden className="size-5" /> {draft.editing ? "Save changes" : "Finish"}
         </Button>
       </div>
-      <div className="h-20" />
+      <div className="h-28" />
 
       <ExerciseSearch
         open={searchOpen}
@@ -443,6 +444,7 @@ function ExerciseCard({
   const { draft, addSet, updateSet, removeSet, removeExerciseFromDraft } = s;
   const [menu, setMenu] = useState(false);
   const rir = s.me?.rirEnabled ?? false;
+  const isBarbell = exerciseMap(s).get(exerciseId)?.equipment === "barbell";
   const e = draft!.exercises[index];
   // Only sessions before this one: matters when editing an older workout.
   const previous = historyFor(s, "me", exerciseId, draft!.startedAt)[0];
@@ -465,16 +467,23 @@ function ExerciseCard({
         </button>
       </div>
       {target.targetKg != null && (
-        <p className="mx-4 mt-2 flex items-center gap-2 rounded-md border border-volt/25 bg-volt/8 px-3 py-2 text-sm shadow-glow-volt">
-          <Target aria-hidden className="size-4 text-volt" />
-          <span>
-            Target:{" "}
-            <span className="tabular font-semibold text-volt">
-              {target.targetKg} kg × {target.targetReps}
-            </span>{" "}
-            <span className="text-subtle">({target.label})</span>
-          </span>
-        </p>
+        <div className="mx-4 mt-2 rounded-md border border-volt/25 bg-volt/8 px-3 py-2 shadow-glow-volt">
+          <p className="flex items-center gap-2 text-sm">
+            <Target aria-hidden className="size-4 text-volt" />
+            <span className="flex-1">
+              Target{" "}
+              <span className="num-hero text-lg text-volt">
+                {target.targetKg} kg × {target.targetReps}
+              </span>
+            </span>
+            <span className="rounded-full bg-volt/15 px-2 py-0.5 text-xs font-semibold text-volt">{target.label}</span>
+          </p>
+          {isBarbell && (
+            <div className="mt-2">
+              <PlateBar kg={target.targetKg} />
+            </div>
+          )}
+        </div>
       )}
       <div className="px-2 pt-2 pb-1">
         <div
@@ -541,7 +550,7 @@ function ExerciseCard({
                 aria-pressed={set.done}
                 onClick={() => updateSet(index, j, { done: !set.done })}
                 disabled={!set.done && (set.reps <= 0 || set.kg < 0)}
-                className={`grid size-11 place-items-center rounded-md transition-colors disabled:opacity-40 ${set.done ? "bg-success text-on-accent" : "border border-success/50 bg-surface-raised text-success"}`}
+                className={`grid size-11 place-items-center rounded-md transition-colors disabled:opacity-40 ${set.done ? "bg-success text-on-accent shadow-[0_6px_18px_-6px_rgb(75_227_160/0.7)] motion-safe:animate-tick" : "border border-success/50 bg-surface-raised text-success"}`}
               >
                 <Check aria-hidden className="size-5" strokeWidth={3} />
               </button>
