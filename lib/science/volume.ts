@@ -31,9 +31,9 @@ export const LOWER_BODY: ReadonlySet<Muscle> = new Set<Muscle>([
 
 export const MUSCLE_LABEL: Record<Muscle, string> = {
   chest: "Chest",
-  front_delts: "Front delts",
-  side_delts: "Side delts",
-  rear_delts: "Rear delts",
+  front_delts: "Shoulders (front)",
+  side_delts: "Shoulders (side)",
+  rear_delts: "Shoulders (rear)",
   biceps: "Biceps",
   triceps: "Triceps",
   forearms: "Forearms",
@@ -47,6 +47,30 @@ export const MUSCLE_LABEL: Record<Muscle, string> = {
   calves: "Calves",
   adductors: "Adductors",
 };
+
+/** Muscle groups people search and think in. Volume is still counted per head (each has its own band). */
+export const MUSCLE_GROUPS = {
+  shoulders: { label: "Shoulders", muscles: ["front_delts", "side_delts", "rear_delts"] as Muscle[] },
+} as const;
+export type MuscleGroup = keyof typeof MUSCLE_GROUPS;
+
+/** Filter chips: groups first, then single muscles. */
+export const MUSCLE_FILTERS: (Muscle | MuscleGroup)[] = [
+  "chest",
+  "shoulders",
+  "front_delts",
+  "side_delts",
+  "rear_delts",
+  ...MUSCLES.filter((m) => !["chest", "front_delts", "side_delts", "rear_delts"].includes(m)),
+];
+
+export function filterLabel(f: Muscle | MuscleGroup): string {
+  return f in MUSCLE_GROUPS ? MUSCLE_GROUPS[f as MuscleGroup].label : MUSCLE_LABEL[f as Muscle];
+}
+
+export function filterMuscles(f: Muscle | MuscleGroup): Muscle[] {
+  return f in MUSCLE_GROUPS ? MUSCLE_GROUPS[f as MuscleGroup].muscles : [f as Muscle];
+}
 
 /** Weekly hard-set band per muscle: at least 10 for growth, more than 20 is a lot to recover from. */
 export const VOLUME_BAND = { min: 10, max: 20 } as const;

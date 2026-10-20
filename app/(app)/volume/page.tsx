@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { Card, Citations, PageHeader } from "@/components/ui/bits";
 import { weeklyVolume } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
-import { MUSCLE_LABEL, MUSCLES, VOLUME_BAND, VOLUME_CITATIONS, volumeStatus } from "@/lib/science/volume";
+import { MUSCLE_GROUPS, MUSCLE_LABEL, MUSCLES, VOLUME_BAND, VOLUME_CITATIONS, volumeStatus } from "@/lib/science/volume";
 
 const SCALE = 26; // bar width covers 0–26 sets
 const STATUS = {
@@ -24,8 +24,16 @@ export default function Volume() {
           {MUSCLES.map((m) => {
             const sets = vol[m] ?? 0;
             const st = STATUS[volumeStatus(sets)];
+            const shoulders = MUSCLE_GROUPS.shoulders.muscles;
+            const isHead = shoulders.includes(m);
+            const shoulderTotal = shoulders.reduce((a, x) => a + (vol[x] ?? 0), 0);
             return (
-              <li key={m}>
+              <li key={m} className={isHead ? "border-l-2 border-accent/40 pl-3" : ""}>
+                {m === shoulders[0] && (
+                  <p className="mb-2 -ml-3 flex items-baseline justify-between pl-3 font-display text-base font-semibold">
+                    Shoulders <span className="tabular text-sm font-normal text-muted">{shoulderTotal} sets total</span>
+                  </p>
+                )}
                 <div className="mb-1 flex items-baseline justify-between text-sm">
                   <span>{MUSCLE_LABEL[m]}</span>
                   <span>

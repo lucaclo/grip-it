@@ -50,6 +50,10 @@ export type Draft = {
   clientId: string;
   startedAt: string;
   exercises: { exerciseId: string; sets: DraftSet[] }[];
+  /** Logging a workout after the fact: every set with reps counts as done. Optional so older drafts still load. */
+  autoTick?: boolean;
+  /** Set when this draft is an edit of a saved workout; Finish replaces that workout in place. */
+  editing?: { id: string; title: string; isPrivate: boolean; endedAt: string };
 };
 
 export type WeightEntry = { day: string; kg: number };

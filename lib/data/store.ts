@@ -4,7 +4,15 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { Exercise } from "./exercises";
 import { DEMO_FRIENDS, demoWorkouts, generateHistory } from "./seed";
-import type { Draft, DraftSet, NutritionDay, Profile, ReactionCode, State, Workout } from "./types";
+import type {
+  Draft,
+  DraftSet,
+  NutritionDay,
+  Profile,
+  ReactionCode,
+  State,
+  Workout,
+} from "./types";
 
 /**
  * Local-only data layer for the prototype. Everything is saved in this browser's storage.
@@ -36,20 +44,36 @@ function initialState(): State {
 }
 
 type Actions = {
-  completeOnboarding: (p: Omit<Profile, "id" | "onboardedAt">, startWeightKg: number, withSampleHistory: boolean) => void;
+  completeOnboarding: (
+    p: Omit<Profile, "id" | "onboardedAt">,
+    startWeightKg: number,
+    withSampleHistory: boolean,
+  ) => void;
   updateProfile: (patch: Partial<Profile>) => void;
   startWorkout: () => void;
   discardDraft: () => void;
   addExerciseToDraft: (exerciseId: string, prefill: DraftSet[]) => void;
   removeExerciseFromDraft: (index: number) => void;
   addSet: (exIndex: number) => void;
-  updateSet: (exIndex: number, setIndex: number, patch: Partial<DraftSet>) => void;
+  updateSet: (
+    exIndex: number,
+    setIndex: number,
+    patch: Partial<DraftSet>,
+  ) => void;
   removeSet: (exIndex: number, setIndex: number) => void;
-  finishWorkout: (title: string, isPrivate: boolean) => string | null;
+  markAllDone: () => void;
+  setAutoTick: (on: boolean) => void;
+  finishWorkout: (
+    title: string,
+    isPrivate: boolean,
+    when?: { startedAt: string; endedAt: string },
+  ) => string | null;
   addCustomExercise: (e: Omit<Exercise, "id" | "custom">) => Exercise;
   logWeight: (kg: number, day?: string) => void;
   logNutrition: (n: Omit<NutritionDay, "day">, day?: string) => void;
   toggleReaction: (feedId: string, code: ReactionCode) => void;
+  editWorkout: (id: string) => boolean;
+  deleteWorkout: (id: string) => void;
   resetAll: () => void;
 };
 
@@ -59,20 +83,36 @@ export const useStore = create<State & Actions>()(
       ...initialState(),
 
       completeOnboarding: (p, startWeightKg, withSampleHistory) => {
-        const me: Profile = { ...p, id: "me", onboardedAt: new Date().toISOString() };
-        const extra = withSampleHistory ? generateHistory("me", p.sessionsPerWeek, 4, new Date(), 7) : [];
+        const me: Profile = {
+          ...p,
+          id: "me",
+          onboardedAt: new Date().toISOString(),
+        };
+        const extra = withSampleHistory
+          ? generateHistory("me", p.sessionsPerWeek, 4, new Date(), 7)
+          : [];
         set((s) => ({
           me,
-          weights: [...s.weights.filter((w) => w.day !== today()), { day: today(), kg: startWeightKg }],
+          weights: [
+            ...s.weights.filter((w) => w.day !== today()),
+            { day: today(), kg: startWeightKg },
+          ],
           workouts: [...s.workouts, ...extra],
         }));
       },
 
-      updateProfile: (patch) => set((s) => (s.me ? { me: { ...s.me, ...patch } } : {})),
+      updateProfile: (patch) =>
+        set((s) => (s.me ? { me: { ...s.me, ...patch } } : {})),
 
       startWorkout: () => {
         if (get().draft) return;
-        set({ draft: { clientId: uid(), startedAt: new Date().toISOString(), exercises: [] } });
+        set({
+          draft: {
+            clientId: uid(),
+            startedAt: new Date().toISOString(),
+            exercises: [],
+          },
+        });
       },
       discardDraft: () => set({ draft: null }),
 
@@ -86,38 +126,78 @@ export const useStore = create<State & Actions>()(
                     ...s.draft.exercises,
                     {
                       exerciseId,
-                      sets: prefill.length ? prefill : [{ kg: 0, reps: 0, rir: null, type: "normal", done: false }],
+                      sets: (prefill.length
+                        ? prefill
+                        : [
+                            {
+                              kg: 0,
+                              reps: 0,
+                              rir: null,
+                              type: "normal" as const,
+                              done: false,
+                            },
+                          ]
+                      ).map((x) => ({
+                        ...x,
+                        done: s.draft!.autoTick ? x.reps > 0 : x.done,
+                      })),
                     },
                   ],
                 },
               }
             : {},
         ),
-      removeExerciseFromDraft: (index) => mutateDraft(set, (d) => d.exercises.splice(index, 1)),
+      removeExerciseFromDraft: (index) =>
+        mutateDraft(set, (d) => d.exercises.splice(index, 1)),
       addSet: (exIndex) =>
         mutateDraft(set, (d) => {
           const sets = d.exercises[exIndex].sets;
           const last = sets[sets.length - 1];
-          sets.push({ kg: last?.kg ?? 0, reps: last?.reps ?? 0, rir: null, type: "normal", done: false });
+          const reps = last?.reps ?? 0;
+          sets.push({
+            kg: last?.kg ?? 0,
+            reps,
+            rir: null,
+            type: "normal",
+            done: !!d.autoTick && reps > 0,
+          });
         }),
       updateSet: (exIndex, setIndex, patch) =>
         mutateDraft(set, (d) => {
-          d.exercises[exIndex].sets[setIndex] = { ...d.exercises[exIndex].sets[setIndex], ...patch };
+          const next = { ...d.exercises[exIndex].sets[setIndex], ...patch };
+          if (d.autoTick && patch.done === undefined) next.done = next.reps > 0;
+          d.exercises[exIndex].sets[setIndex] = next;
         }),
-      removeSet: (exIndex, setIndex) => mutateDraft(set, (d) => d.exercises[exIndex].sets.splice(setIndex, 1)),
+      removeSet: (exIndex, setIndex) =>
+        mutateDraft(set, (d) => d.exercises[exIndex].sets.splice(setIndex, 1)),
+      markAllDone: () =>
+        mutateDraft(set, (d) => {
+          for (const e of d.exercises)
+            for (const x of e.sets) if (x.reps > 0) x.done = true;
+        }),
 
-      finishWorkout: (title, isPrivate) => {
+      setAutoTick: (on) =>
+        mutateDraft(set, (d) => {
+          d.autoTick = on;
+          if (on)
+            for (const e of d.exercises)
+              for (const x of e.sets) x.done = x.reps > 0;
+        }),
+
+      finishWorkout: (title, isPrivate, when) => {
         const d = get().draft;
         if (!d) return null;
-        // Idempotent on the draft's clientId, like the real finish_workout RPC.
-        if (get().workouts.some((w) => w.id === d.clientId)) {
+        // Idempotent on the draft's clientId, like the real finish_workout RPC (edits replace instead).
+        if (!d.editing && get().workouts.some((w) => w.id === d.clientId)) {
           set({ draft: null });
           return d.clientId;
         }
         const exercises = d.exercises
           .map((e) => ({
             exerciseId: e.exerciseId,
-            sets: e.sets.filter((x) => x.done && x.reps > 0).map(({ kg, reps, rir, type }) => ({ kg, reps, rir, type })),
+            sets: e.sets
+              .filter((x) => x.done && x.reps > 0)
+              .map(({ kg, reps, rir, type }) => ({ kg, reps, rir, type })),
           }))
           .filter((e) => e.sets.length > 0);
         if (!exercises.length) return null;
@@ -125,12 +205,15 @@ export const useStore = create<State & Actions>()(
           id: d.clientId,
           userId: "me",
           title: title.trim() || "Workout",
-          startedAt: d.startedAt,
-          endedAt: new Date().toISOString(),
+          startedAt: when?.startedAt ?? d.startedAt,
+          endedAt: when?.endedAt ?? new Date().toISOString(),
           isPrivate,
           exercises,
         };
-        set((s) => ({ workouts: [...s.workouts, w], draft: null }));
+        set((s) => ({
+          workouts: d.editing ? s.workouts.map((x) => (x.id === w.id ? w : x)) : [...s.workouts, w],
+          draft: null,
+        }));
         return w.id;
       },
 
@@ -142,20 +225,49 @@ export const useStore = create<State & Actions>()(
 
       logWeight: (kg, day = today()) =>
         set((s) => ({
-          weights: [...s.weights.filter((w) => w.day !== day), { day, kg }].sort((a, b) => a.day.localeCompare(b.day)),
+          weights: [
+            ...s.weights.filter((w) => w.day !== day),
+            { day, kg },
+          ].sort((a, b) => a.day.localeCompare(b.day)),
         })),
       logNutrition: (n, day = today()) =>
         set((s) => ({
-          nutrition: [...s.nutrition.filter((x) => x.day !== day), { ...n, day }].sort((a, b) => a.day.localeCompare(b.day)),
+          nutrition: [
+            ...s.nutrition.filter((x) => x.day !== day),
+            { ...n, day },
+          ].sort((a, b) => a.day.localeCompare(b.day)),
         })),
 
       toggleReaction: (feedId, code) =>
         set((s) => {
           const item = { ...(s.reactions[feedId] ?? {}) };
           const users = item[code] ?? [];
-          item[code] = users.includes("me") ? users.filter((u) => u !== "me") : [...users, "me"];
+          item[code] = users.includes("me")
+            ? users.filter((u) => u !== "me")
+            : [...users, "me"];
           return { reactions: { ...s.reactions, [feedId]: item } };
         }),
+
+      editWorkout: (id) => {
+        const w = get().workouts.find((x) => x.id === id && x.userId === "me");
+        if (!w || get().draft) return false;
+        set({
+          draft: {
+            clientId: w.id,
+            startedAt: w.startedAt,
+            autoTick: true,
+            editing: { id: w.id, title: w.title, isPrivate: w.isPrivate, endedAt: w.endedAt },
+            exercises: w.exercises.map((e) => ({ exerciseId: e.exerciseId, sets: e.sets.map((x) => ({ ...x, done: true })) })),
+          },
+        });
+        return true;
+      },
+
+      deleteWorkout: (id) =>
+        set((s) => ({
+          workouts: s.workouts.filter((w) => !(w.id === id && w.userId === "me")),
+          reactions: Object.fromEntries(Object.entries(s.reactions).filter(([k]) => !k.includes(id))),
+        })),
 
       resetAll: () => set(initialState()),
     }),
@@ -173,7 +285,10 @@ export const useStore = create<State & Actions>()(
   ),
 );
 
-function mutateDraft(set: (fn: (s: State) => Partial<State>) => void, fn: (d: Draft) => void) {
+function mutateDraft(
+  set: (fn: (s: State) => Partial<State>) => void,
+  fn: (d: Draft) => void,
+) {
   set((s) => {
     if (!s.draft) return {};
     const d: Draft = structuredClone(s.draft);

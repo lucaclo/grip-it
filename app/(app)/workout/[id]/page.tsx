@@ -1,10 +1,10 @@
 "use client";
 
-import { ChevronRight, Flame, HelpCircle, Medal, Trophy } from "lucide-react";
+import { ChevronRight, Flame, HelpCircle, Medal, Pencil, Trash2, Trophy } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { ButtonLink } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, Citations, EmptyState, PageHeader, SectionTitle } from "@/components/ui/bits";
 import { Sheet } from "@/components/ui/sheet";
 import { allPRs, exerciseMap, streakOf, suggestionFor, userName, volumeKg, workoutsOf } from "@/lib/data/selectors";
@@ -18,6 +18,9 @@ export default function WorkoutSummary() {
   const ex = useMemo(() => exerciseMap(s), [s]);
   const prs = useMemo(() => allPRs(s).filter((p) => p.workoutId === id), [s, id]);
   const [why, setWhy] = useState<{ name: string; sug: Suggestion } | null>(null);
+  const router = useRouter();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [busyNote, setBusyNote] = useState(false);
 
   if (!w) return <EmptyState icon={<HelpCircle className="size-10" />} title="Workout not found" body="It may have been reset." />;
 
@@ -122,9 +125,51 @@ export default function WorkoutSummary() {
         ))}
       </Card>
 
-      <ButtonLink href="/home" variant="secondary" size="lg" className="w-full">
+      {mine && (
+        <div className="mb-3 grid grid-cols-2 gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => {
+              if (s.editWorkout(w.id)) router.push("/log");
+              else setBusyNote(true);
+            }}
+          >
+            <Pencil aria-hidden className="size-4" /> Edit
+          </Button>
+          <Button variant="secondary" className="text-danger" onClick={() => setDeleteOpen(true)}>
+            <Trash2 aria-hidden className="size-4" /> Delete
+          </Button>
+        </div>
+      )}
+      {busyNote && (
+        <p role="status" className="mb-3 rounded-md border border-warning/40 bg-warning/10 p-3 text-sm text-warning">
+          Finish or discard the workout you&apos;re logging first, then edit this one.
+        </p>
+      )}
+      <ButtonLink href={mine ? "/log" : "/feed"} variant="secondary" size="lg" className="w-full">
         Done
       </ButtonLink>
+
+      <Sheet open={deleteOpen} onClose={() => setDeleteOpen(false)} title="Delete workout?">
+        <div className="flex flex-col gap-3">
+          <p className="text-muted">
+            &ldquo;{w.title}&rdquo; and its sets are removed for good. PRs and leaderboards update to match.
+          </p>
+          <Button
+            variant="danger"
+            size="lg"
+            onClick={() => {
+              s.deleteWorkout(w.id);
+              router.replace("/log");
+            }}
+          >
+            <Trash2 aria-hidden className="size-5" /> Delete
+          </Button>
+          <Button variant="secondary" onClick={() => setDeleteOpen(false)}>
+            Keep it
+          </Button>
+        </div>
+      </Sheet>
 
       <Sheet open={!!why} onClose={() => setWhy(null)} title={why?.name ?? ""}>
         {why && (
