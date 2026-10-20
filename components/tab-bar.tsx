@@ -17,7 +17,7 @@ export function TabBar() {
   const path = usePathname();
   const active = useStore((s) => !!s.draft);
   return (
-    <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 pb-safe backdrop-blur">
+    <nav aria-label="Main" className="glass fixed inset-x-0 bottom-0 z-20 border-t border-white/8 pb-safe">
       <ul className="mx-auto flex h-14 max-w-[480px]">
         {TABS.map(({ href, label, Icon }) => {
           const on = path === href || path.startsWith(href + "/");
@@ -28,10 +28,11 @@ export function TabBar() {
                 aria-current={on ? "page" : undefined}
                 className={`relative flex h-full flex-col items-center justify-center gap-0.5 text-xs font-medium ${on ? "text-accent" : "text-muted"}`}
               >
+                {on && <span aria-hidden className="bg-brand absolute top-0 h-0.5 w-8 rounded-full shadow-glow" />}
                 <Icon aria-hidden className="size-6" strokeWidth={on ? 2.4 : 2} />
                 {label}
                 {href === "/log" && active && (
-                  <span className="absolute top-2 right-[calc(50%-18px)] size-2 rounded-full bg-accent">
+                  <span className="absolute top-2 right-[calc(50%-18px)] size-2 rounded-full bg-volt shadow-glow-volt">
                     <span className="sr-only">Workout in progress</span>
                   </span>
                 )}

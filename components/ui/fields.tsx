@@ -142,7 +142,7 @@ export function Segmented<T extends string>({
   return (
     <fieldset className="flex flex-col gap-1.5">
       <legend className={hideLabel ? "sr-only" : "mb-1.5 text-sm font-medium text-muted"}>{label}</legend>
-      <div role="radiogroup" className="flex gap-1 rounded-md bg-surface p-1">
+      <div role="radiogroup" className="flex gap-1 rounded-md border border-border bg-surface/80 p-1">
         {options.map((o) => {
           const on = o.value === value;
           return (
@@ -152,7 +152,7 @@ export function Segmented<T extends string>({
               role="radio"
               aria-checked={on}
               onClick={() => onChange(o.value)}
-              className={`min-h-11 flex-1 rounded-sm px-2 text-sm font-medium transition-colors ${on ? "bg-surface-raised text-accent" : "text-muted"}`}
+              className={`min-h-11 flex-1 rounded-sm px-2 text-sm font-medium transition-all ${on ? "bg-surface-raised text-text shadow-[inset_0_0_0_1px_rgb(183_156_255/0.55),0_6px_18px_-8px_rgb(183_156_255/0.6)]" : "text-muted"}`}
             >
               {o.label}
             </button>
@@ -186,7 +186,7 @@ export function Toggle({
         <span className="block text-base">{label}</span>
         {description && <span className="block text-sm text-subtle">{description}</span>}
       </span>
-      <span className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${checked ? "bg-accent" : "bg-surface-raised border border-border-input"}`}>
+      <span className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${checked ? "bg-brand shadow-glow" : "bg-surface-raised border border-border-input"}`}>
         <span className={`absolute top-0.5 size-6 rounded-full transition-transform ${checked ? "translate-x-5.5 bg-on-accent" : "translate-x-0.5 bg-muted"}`} />
       </span>
     </button>

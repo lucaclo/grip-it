@@ -35,7 +35,7 @@ export default function WorkoutSummary() {
       />
 
       {prs.length > 0 && (
-        <section className="mb-4 rounded-lg bg-pr p-4 text-on-pr motion-safe:animate-pop" role="status">
+        <section className="mb-4 rounded-xl bg-gradient-to-br from-pr via-[#ffb38a] to-accent-2 p-4 text-on-pr shadow-[0_14px_40px_-12px_rgb(255_200_87/0.6)] motion-safe:animate-pop" role="status">
           <div className="flex items-center gap-2">
             <Trophy aria-hidden className="size-6" />
             <p className="font-display text-xl font-bold uppercase">
@@ -61,7 +61,7 @@ export default function WorkoutSummary() {
           ["Sets", String(sets)],
           ["Volume", `${Math.round(volumeKg(w))} kg`],
         ].map(([k, v]) => (
-          <div key={k} className="rounded-md border border-border bg-surface p-3">
+          <div key={k} className="card rounded-md p-3">
             <dt className="text-xs text-subtle">{k}</dt>
             <dd className="tabular text-xl font-semibold">{v}</dd>
           </div>
@@ -87,7 +87,7 @@ export default function WorkoutSummary() {
               const sug = suggestionFor(s, e.exerciseId, new Date(Date.parse(w.startedAt) + 1).toISOString());
               return (
                 <li key={e.exerciseId}>
-                  <button type="button" onClick={() => setWhy({ name, sug })} className="flex min-h-16 w-full items-center gap-3 rounded-md border border-border bg-surface px-3 text-left">
+                  <button type="button" onClick={() => setWhy({ name, sug })} className="flex min-h-16 w-full items-center gap-3 card rounded-md px-3 text-left">
                     <span className="flex-1">
                       <span className="block text-base">{name}</span>
                       <span className="tabular block text-sm text-muted">
@@ -95,7 +95,7 @@ export default function WorkoutSummary() {
                       </span>
                     </span>
                     <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${sug.action === "add_weight" ? "bg-accent text-on-accent" : sug.action === "deload" ? "bg-warning text-on-pr" : "bg-surface-raised text-text"}`}
+                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${sug.action === "add_weight" ? "bg-volt text-on-volt" : sug.action === "deload" ? "bg-warning text-on-pr" : "bg-surface-raised text-text"}`}
                     >
                       {sug.label}
                     </span>

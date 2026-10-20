@@ -62,7 +62,7 @@ export default function Compete() {
             return (
               <li
                 key={r.userId}
-                className={`flex min-h-16 items-center gap-3 rounded-md border bg-surface px-3 ${you ? "border-accent" : "border-border"}`}
+                className={`flex min-h-16 items-center gap-3 rounded-md border px-3 ${you ? "border-accent/70 bg-gradient-to-r from-accent/18 to-accent-2/8 shadow-glow" : "card"}`}
               >
                 <span className="w-8 text-center">
                   {r.rank != null && r.rank <= 3 ? (
@@ -123,7 +123,7 @@ export default function Compete() {
                   </div>
                   <div className="h-2 rounded-full bg-surface-raised">
                     <div
-                      className={`h-2 rounded-full ${r.score >= challenge.goal ? "bg-success" : "bg-accent"}`}
+                      className={`h-2 rounded-full ${r.score >= challenge.goal ? "bg-success" : "bg-brand"}`}
                       style={{ width: `${Math.min(100, (r.score / challenge.goal) * 100)}%` }}
                     />
                   </div>

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b0b0d",
+  themeColor: "#16141f",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -25,7 +25,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en-GB" className={`${barlow.variable} ${barlowCondensed.variable}`}>
-      <body className="min-h-dvh antialiased">{children}</body>
+      <body className="min-h-dvh antialiased">
+        <div className="aurora" aria-hidden />
+        {children}
+      </body>
     </html>
   );
 }

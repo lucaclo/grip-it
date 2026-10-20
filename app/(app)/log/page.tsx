@@ -82,7 +82,7 @@ export default function LogPage() {
 
   return (
     <>
-      <header className="sticky top-0 z-10 -mx-4 border-b border-border bg-bg/95 px-4 pt-safe backdrop-blur">
+      <header className="glass sticky top-0 z-10 -mx-4 border-b border-white/8 px-4 pt-safe">
         <div className="flex items-center gap-3 py-3">
           <div className="flex-1">
             <p className="text-xs uppercase tracking-wide text-subtle">Workout in progress</p>
@@ -198,7 +198,7 @@ function ExerciseCard({ index, name, muscle, exerciseId }: { index: number; name
   const target = suggestionFor(s, exerciseId, draft!.startedAt);
 
   return (
-    <section className="rounded-lg border border-border bg-surface" aria-label={name}>
+    <section className="card rounded-lg" aria-label={name}>
       <div className="flex items-center gap-2 px-4 pt-3">
         <div className="flex-1">
           <h2 className="font-display text-lg font-semibold">{name}</h2>
@@ -209,10 +209,10 @@ function ExerciseCard({ index, name, muscle, exerciseId }: { index: number; name
         </button>
       </div>
       {target.targetKg != null && (
-        <p className="mx-4 mt-2 flex items-center gap-2 rounded-md bg-surface-raised px-3 py-2 text-sm">
-          <Target aria-hidden className="size-4 text-accent" />
+        <p className="mx-4 mt-2 flex items-center gap-2 rounded-md border border-volt/25 bg-volt/8 px-3 py-2 text-sm shadow-glow-volt">
+          <Target aria-hidden className="size-4 text-volt" />
           <span>
-            Target: <span className="tabular font-semibold text-accent">{target.targetKg} kg × {target.targetReps}</span>{" "}
+            Target: <span className="tabular font-semibold text-volt">{target.targetKg} kg × {target.targetReps}</span>{" "}
             <span className="text-subtle">({target.label})</span>
           </span>
         </p>

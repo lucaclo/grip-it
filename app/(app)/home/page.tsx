@@ -51,23 +51,26 @@ export default function Home() {
           </Button>
         )}
 
-        <div className="grid grid-cols-3 gap-2">
-          <Link href="/compete" className="rounded-lg border border-border bg-surface p-3">
-            <Trophy aria-hidden className="size-5 text-accent" />
-            <p className="tabular mt-1 text-stat font-semibold leading-none">{myRow?.rank ? `#${myRow.rank}` : "—"}</p>
-            <p className="text-xs text-muted">this week</p>
-          </Link>
-          <div className="rounded-lg border border-border bg-surface p-3">
-            <Flame aria-hidden className="size-5 text-accent" />
-            <p className="tabular mt-1 text-stat font-semibold leading-none">{streak}</p>
-            <p className="text-xs text-muted">week streak</p>
+        <Link href="/compete" className="card-hero relative overflow-hidden rounded-xl p-5" aria-label={`This week: rank ${myRow?.rank ?? "none"}, ${streak}-week streak, ${hard} hard sets`}>
+          <p className="text-xs font-semibold uppercase tracking-widest text-text">This week</p>
+          <div className="mt-1 flex items-end gap-2">
+            <span className="tabular text-[4rem] leading-none font-bold">{myRow?.rank ? `#${myRow.rank}` : "—"}</span>
+            <span className="mb-2 text-sm text-text">in {s.groupName}</span>
           </div>
-          <div className="rounded-lg border border-border bg-surface p-3">
-            <Dumbbell aria-hidden className="size-5 text-accent" />
-            <p className="tabular mt-1 text-stat font-semibold leading-none">{hard}</p>
-            <p className="text-xs text-muted">hard sets</p>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <div className="rounded-md bg-black/25 p-3 backdrop-blur-sm">
+              <Flame aria-hidden className="size-5 text-volt" />
+              <p className="tabular mt-1 text-stat font-semibold leading-none">{streak}</p>
+              <p className="text-xs text-text">week streak</p>
+            </div>
+            <div className="rounded-md bg-black/25 p-3 backdrop-blur-sm">
+              <Trophy aria-hidden className="size-5 text-volt" />
+              <p className="tabular mt-1 text-stat font-semibold leading-none">{hard}</p>
+              <p className="text-xs text-text">hard sets</p>
+            </div>
           </div>
-        </div>
+          <ChevronRight aria-hidden className="absolute top-5 right-4 size-5 text-text" />
+        </Link>
 
         <Card>
           <SectionTitle
@@ -110,7 +113,7 @@ export default function Home() {
                     </span>
                   </div>
                   <div className="h-2 rounded-full bg-surface-raised">
-                    <div className="h-2 rounded-full bg-accent" style={{ width: `${Math.min(100, (sets / VOLUME_BAND.min) * 100)}%` }} />
+                    <div className="h-2 rounded-full bg-brand" style={{ width: `${Math.min(100, (sets / VOLUME_BAND.min) * 100)}%` }} />
                   </div>
                 </li>
               ))}
@@ -120,7 +123,7 @@ export default function Home() {
           )}
         </Card>
 
-        <Link href="/body" className="flex min-h-14 items-center gap-3 rounded-lg border border-border bg-surface px-4">
+        <Link href="/body" className="flex min-h-14 items-center gap-3 card rounded-lg px-4">
           <Scale aria-hidden className="size-5 text-accent" />
           <span className="flex-1">Body weight and nutrition</span>
           <ChevronRight aria-hidden className="size-5 text-subtle" />

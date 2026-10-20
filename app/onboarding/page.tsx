@@ -114,7 +114,7 @@ export default function Onboarding() {
         )}
         <div className="flex flex-1 gap-1.5" aria-label={`Step ${step + 1} of 3`}>
           {[0, 1, 2].map((i) => (
-            <span key={i} className={`h-1.5 flex-1 rounded-full ${i <= step ? "bg-accent" : "bg-surface-raised"}`} />
+            <span key={i} className={`h-1.5 flex-1 rounded-full ${i <= step ? "bg-brand shadow-glow" : "bg-surface-raised"}`} />
           ))}
         </div>
         <span className="size-11" />
@@ -123,7 +123,7 @@ export default function Onboarding() {
       {step === 0 && (
         <section className="flex flex-1 flex-col gap-4 pt-6">
           <div>
-            <h1 className="font-display text-display font-bold uppercase leading-none">About you</h1>
+            <h1 className="text-brand font-display text-display font-bold uppercase leading-none">About you</h1>
             <p className="mt-2 text-muted">We use this to set your calorie and protein targets.</p>
           </div>
           <TextField label="Display name" value={name} onChange={setName} placeholder="What your friends call you" error={show(errors.name)} />
@@ -160,7 +160,7 @@ export default function Onboarding() {
       {step === 1 && (
         <section className="flex flex-1 flex-col gap-5 pt-6">
           <div>
-            <h1 className="font-display text-display font-bold uppercase leading-none">Your goal</h1>
+            <h1 className="text-brand font-display text-display font-bold uppercase leading-none">Your goal</h1>
             <p className="mt-2 text-muted">You can switch any time in settings.</p>
           </div>
           <div role="radiogroup" aria-label="Goal" className="flex flex-col gap-2">
@@ -171,7 +171,7 @@ export default function Onboarding() {
                 role="radio"
                 aria-checked={goal === g.value}
                 onClick={() => setGoal(g.value)}
-                className={`rounded-md border p-3 text-left transition-colors ${goal === g.value ? "border-accent bg-surface-raised" : "border-border bg-surface"}`}
+                className={`rounded-md border p-3 text-left transition-colors ${goal === g.value ? "border-accent/70 bg-surface-raised shadow-glow" : "border-border bg-surface/80"}`}
               >
                 <span className={`block font-display text-lg font-semibold ${goal === g.value ? "text-accent" : ""}`}>{g.title}</span>
                 <span className="block text-sm text-muted">{g.body}</span>
@@ -225,7 +225,7 @@ export default function Onboarding() {
       {step === 2 && plan && (
         <section className="flex flex-1 flex-col gap-4 pt-6">
           <div>
-            <h1 className="font-display text-display font-bold uppercase leading-none">Your plan</h1>
+            <h1 className="text-brand font-display text-display font-bold uppercase leading-none">Your plan</h1>
             <p className="mt-2 text-muted">Based on published research. Tap a source to read it.</p>
           </div>
           <div className="grid grid-cols-2 gap-3">

@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Log lifts, get research-backed targets, beat your friends.",
     start_url: "/",
     display: "standalone",
-    background_color: "#0b0b0d",
-    theme_color: "#0b0b0d",
+    background_color: "#16141f",
+    theme_color: "#16141f",
     icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml" }],
   };
 }

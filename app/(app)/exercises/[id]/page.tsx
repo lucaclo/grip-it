@@ -87,7 +87,7 @@ export default function ExerciseHistory() {
       <SectionTitle>History</SectionTitle>
       <ul className="flex flex-col gap-2">
         {[...sessions].reverse().map((x, i) => (
-          <li key={i} className="flex justify-between rounded-md border border-border bg-surface px-3 py-2 text-sm">
+          <li key={i} className="flex justify-between card rounded-md px-3 py-2 text-sm">
             <span className="text-muted">{x.date}</span>
             <span className="tabular">{x.sets.map((y) => `${y.kg}×${y.reps}`).join("  ")}</span>
           </li>

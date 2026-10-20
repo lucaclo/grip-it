@@ -84,7 +84,7 @@ export function ExerciseSearch({
         />
       ) : (
         <div className="flex flex-col gap-3">
-          <div className="sticky top-0 z-10 flex flex-col gap-2 bg-surface pb-2">
+          <div className="sticky top-0 z-10 -mx-4 flex flex-col gap-2 bg-surface/85 px-4 pb-2 backdrop-blur-md">
             <div className="flex min-h-12 items-center gap-2 rounded-md border border-border-input bg-bg px-3 focus-within:border-focus">
               <Search aria-hidden className="size-5 text-subtle" />
               <input

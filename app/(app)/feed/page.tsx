@@ -46,7 +46,7 @@ export default function Feed() {
           const mine = s.reactions[it.id] ?? {};
           const seeded = seededReactions(it.id);
           return (
-            <li key={it.id} className="rounded-lg border border-border bg-surface p-4">
+            <li key={it.id} className="card rounded-lg p-4">
               <div className="flex items-center gap-3">
                 <Avatar name={name} you={it.userId === "me"} />
                 <p className="flex-1 text-sm text-muted">

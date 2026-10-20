@@ -40,7 +40,7 @@ export function Sheet({
     >
       <div
         style={{ transform: dragY ? `translateY(${dragY}px)` : undefined }}
-        className={`mx-auto flex max-w-[480px] flex-col rounded-t-lg border border-b-0 border-border bg-surface pb-safe ${tall ? "h-full" : "max-h-[85dvh]"} ${dragY ? "" : "transition-transform duration-200"}`}
+        className={`mx-auto flex max-w-[480px] flex-col rounded-t-lg glass border border-b-0 border-white/10 pb-safe ${tall ? "h-full" : "max-h-[85dvh]"} ${dragY ? "" : "transition-transform duration-200"}`}
       >
         {/* Grabber + header: drag down to dismiss (the close button is the non-gesture alternative). */}
         <div

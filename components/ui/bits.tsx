@@ -1,12 +1,12 @@
 "use client";
 
 import { BookOpen, ExternalLink, ShieldCheck } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { citations, type Citation } from "@/lib/science/citations";
 import { Sheet } from "./sheet";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <section className={`rounded-lg border border-border bg-surface p-4 ${className}`}>{children}</section>;
+  return <section className={`card rounded-lg p-4 ${className}`}>{children}</section>;
 }
 
 export function SectionTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
@@ -23,7 +23,7 @@ export function PageHeader({ title, subtitle, action }: { title: string; subtitl
     <header className="pt-safe">
       <div className="flex items-end gap-3 pt-5 pb-4">
         <div className="flex-1">
-          <h1 className="font-display text-display font-bold uppercase leading-none">{title}</h1>
+          <h1 className="text-brand font-display text-display font-bold uppercase leading-none">{title}</h1>
           {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
         </div>
         {action}
@@ -68,15 +68,22 @@ export function ProgressRing({
   unit: string;
   size?: number;
 }) {
+  const gid = useId();
   const pct = target > 0 ? value / target : 0;
   const r = size / 2 - 7;
   const c = 2 * Math.PI * r;
   const met = pct >= 1;
-  const stroke = met ? "var(--color-success)" : "var(--color-accent)";
+  const stroke = met ? "var(--color-success)" : `url(#${gid})`;
   return (
     <div className="flex flex-col items-center gap-1" role="img" aria-label={`${label}: ${value} of ${target} ${unit}`}>
       <div className="relative" style={{ width: size, height: size }}>
-        <svg width={size} height={size} className="-rotate-90" aria-hidden>
+        <svg width={size} height={size} className="-rotate-90 drop-shadow-[0_0_10px_rgb(183_156_255/0.35)]" aria-hidden>
+          <defs>
+            <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="var(--color-accent)" />
+              <stop offset="100%" stopColor="var(--color-accent-2)" />
+            </linearGradient>
+          </defs>
           <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-surface-raised)" strokeWidth={7} />
           <circle
             cx={size / 2}
@@ -120,7 +127,7 @@ export function CitationChip({ citationKey }: { citationKey: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-surface-raised px-3 text-sm text-muted"
+        className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 text-sm text-accent"
       >
         <BookOpen aria-hidden className="size-4" />
         {c.shortRef}
@@ -164,7 +171,7 @@ export function Avatar({ name, you }: { name: string; you?: boolean }) {
   return (
     <span
       aria-hidden
-      className={`grid size-10 shrink-0 place-items-center rounded-full font-display text-lg font-semibold ${you ? "bg-accent text-on-accent" : "bg-surface-raised text-text"}`}
+      className={`grid size-10 shrink-0 place-items-center rounded-full font-display text-lg font-semibold ${you ? "bg-brand text-on-accent shadow-glow" : "bg-surface-raised text-text ring-1 ring-border"}`}
     >
       {name.slice(0, 1).toUpperCase()}
     </span>
