@@ -41,7 +41,7 @@ export default function Body() {
   return (
     <>
       <PageHeader title="Body" subtitle="Private to you unless you share it in settings." />
-      <div className="flex flex-col gap-4">
+      <div className="stagger flex flex-col gap-4">
         <Card>
           <SectionTitle>Weight</SectionTitle>
           <div className="flex items-end gap-2">

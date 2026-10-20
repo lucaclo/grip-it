@@ -54,6 +54,9 @@ export type Draft = {
   autoTick?: boolean;
   /** Set when this draft is an edit of a saved workout; Finish replaces that workout in place. */
   editing?: { id: string; title: string; isPrivate: boolean; endedAt: string };
+  /** Rest timer: when the current rest ends and how long it was. Timestamps survive the app sleeping. */
+  restEndsAt?: string | null;
+  restTotalSec?: number;
 };
 
 export type WeightEntry = { day: string; kg: number };

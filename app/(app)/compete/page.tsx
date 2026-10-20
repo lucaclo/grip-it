@@ -4,6 +4,7 @@ import { Crown, Info, Medal, TriangleAlert, UserPlus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Avatar, Card, Citations, PageHeader, SectionTitle } from "@/components/ui/bits";
 import { Segmented } from "@/components/ui/fields";
+import { CountUp } from "@/components/ui/motion";
 import { allPRs, DAY_MS, leaderboard, weekStart, weeklyHardSets, type Metric } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
 import { DOTS_CITATIONS } from "@/lib/science/strength";
@@ -57,10 +58,10 @@ export default function Compete() {
   return (
     <>
       <PageHeader title="Compete" subtitle={s.groupName} />
-      <div className="flex flex-col gap-4">
+      <div className="stagger flex flex-col gap-4">
         <Segmented label="Leaderboard" hideLabel value={metric} onChange={setMetric} options={METRICS.map((x) => ({ value: x.value, label: x.label }))} />
 
-        {podium.length >= 2 && <Podium rows={podium} flagged={flaggedUsers} />}
+        {podium.length >= 2 && <Podium key={metric} rows={podium} flagged={flaggedUsers} />}
 
         <ol className="flex flex-col gap-2" aria-label={`${m.label} leaderboard${podium.length >= 2 ? ", from 4th" : ""}`}>
           {rest.map((r) => {
@@ -164,14 +165,14 @@ function weeklyChallenge(s: ReturnType<typeof useStore.getState>) {
 }
 
 const PODIUM = [
-  { place: "1st", height: "h-28", ring: "from-rank-gold", text: "text-rank-gold", order: "order-2" },
-  { place: "2nd", height: "h-20", ring: "from-rank-silver", text: "text-rank-silver", order: "order-1" },
-  { place: "3rd", height: "h-14", ring: "from-rank-bronze", text: "text-rank-bronze", order: "order-3" },
+  { place: "1st", height: "h-28", ring: "from-rank-gold", text: "text-rank-gold", order: "order-2", delay: 420 },
+  { place: "2nd", height: "h-20", ring: "from-rank-silver", text: "text-rank-silver", order: "order-1", delay: 220 },
+  { place: "3rd", height: "h-14", ring: "from-rank-bronze", text: "text-rank-bronze", order: "order-3", delay: 60 },
 ];
 
 function Podium({ rows, flagged }: { rows: ReturnType<typeof leaderboard>; flagged: Set<string> }) {
   return (
-    <ol aria-label="Top three" className="card-hero flex items-end gap-2 rounded-xl px-3 pt-5">
+    <ol aria-label="Top three" className="card-hero shine flex items-end gap-2 rounded-xl px-3 pt-7">
       {rows.map((r, i) => {
         const p = PODIUM[i];
         const you = r.userId === "me";
@@ -181,16 +182,34 @@ function Podium({ rows, flagged }: { rows: ReturnType<typeof leaderboard>; flagg
               <span className={`grid place-items-center rounded-full font-display font-semibold ${i === 0 ? "size-16 text-2xl" : "size-12 text-xl"} ${you ? "bg-brand text-on-accent" : "bg-surface-raised text-text"}`}>
                 {r.name.slice(0, 1)}
               </span>
-              {i === 0 && <Crown aria-hidden className="absolute -top-4 left-1/2 size-5 -translate-x-1/2 text-rank-gold" />}
+              {i === 0 && (
+                <Crown
+                  aria-hidden
+                  style={{ animationDelay: `${p.delay + 500}ms` }}
+                  className="absolute -top-4 left-1/2 size-5 -translate-x-1/2 text-rank-gold motion-safe:animate-drop"
+                />
+              )}
             </span>
             <span className="max-w-full truncate text-sm font-medium">
               {r.name}
               {you && <span className="ml-1 text-xs font-semibold uppercase text-accent">You</span>}
             </span>
-            <span className="num-hero text-2xl leading-tight">{r.display}</span>
+            <span className="num-hero text-2xl leading-tight">
+              {r.score != null && /^[+-]?\d/.test(r.display) ? (
+                <CountUp
+                  value={r.score}
+                  decimals={r.display.includes(".") ? 1 : 0}
+                  prefix={r.display.startsWith("+") ? "+" : ""}
+                  suffix={r.display.endsWith("%") ? "%" : ""}
+                />
+              ) : (
+                r.display
+              )}
+            </span>
             {flagged.has(r.userId) && <TriangleAlert aria-label="Big jump, honour system" className="size-3.5 text-warning" />}
             <span
-              className={`mt-1.5 flex w-full ${p.height} items-start justify-center rounded-t-lg border border-b-0 border-white/10 bg-gradient-to-b from-white/12 to-white/2 pt-1.5`}
+              style={{ animationDelay: `${p.delay}ms` }}
+              className={`mt-1.5 flex w-full ${p.height} origin-bottom items-start justify-center rounded-t-lg border border-b-0 border-white/10 bg-gradient-to-b from-white/12 to-white/2 pt-1.5 motion-safe:animate-grow`}
             >
               <span className={`num-hero text-3xl ${p.text}`} aria-hidden>
                 {i + 1}

@@ -4,6 +4,7 @@ import { Flame, HandMetal, Laugh, Skull, Trophy, TriangleAlert, BicepsFlexed, ty
 import Link from "next/link";
 import { useMemo } from "react";
 import { Avatar, EmptyState, PageHeader } from "@/components/ui/bits";
+import { useBurst } from "@/components/ui/motion";
 import { exerciseMap, feed, seededReactions, userName, volumeKg } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
 import type { ReactionCode } from "@/lib/data/types";
@@ -40,7 +41,7 @@ export default function Feed() {
   return (
     <>
       <PageHeader title="Feed" subtitle={s.groupName} />
-      <ul className="flex flex-col gap-3">
+      <ul className="stagger flex flex-col gap-3">
         {items.map((it) => {
           const name = userName(s, it.userId);
           const mine = s.reactions[it.id] ?? {};
@@ -92,17 +93,14 @@ export default function Feed() {
                   const on = (mine[code] ?? []).includes("me");
                   const count = (seeded[code]?.length ?? 0) + (on ? 1 : 0);
                   return (
-                    <button
+                    <ReactionButton
                       key={code}
-                      type="button"
-                      aria-pressed={on}
-                      aria-label={`${label}, ${count}`}
-                      onClick={() => s.toggleReaction(it.id, code)}
-                      className={`flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-full border px-2.5 text-sm transition-transform active:scale-90 ${on ? "border-accent bg-accent text-on-accent" : "border-border text-muted"}`}
-                    >
-                      <Icon aria-hidden className="size-4" />
-                      {count > 0 && <span className="tabular">{count}</span>}
-                    </button>
+                      on={on}
+                      count={count}
+                      label={label}
+                      Icon={Icon}
+                      onToggle={() => s.toggleReaction(it.id, code)}
+                    />
                   );
                 })}
               </div>
@@ -111,5 +109,48 @@ export default function Feed() {
         })}
       </ul>
     </>
+  );
+}
+
+function ReactionButton({
+  on,
+  count,
+  label,
+  Icon,
+  onToggle,
+}: {
+  on: boolean;
+  count: number;
+  label: string;
+  Icon: LucideIcon;
+  onToggle: () => void;
+}) {
+  const { bursts, fire } = useBurst();
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      aria-label={`${label}, ${count}`}
+      onClick={() => {
+        if (!on) fire();
+        onToggle();
+      }}
+      className={`relative flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-full border px-2.5 text-sm transition-all duration-200 active:scale-90 ${on ? "border-accent bg-brand text-on-accent shadow-glow" : "border-border text-muted"}`}
+    >
+      <Icon aria-hidden className={`size-4 transition-transform ${on ? "scale-110" : ""}`} />
+      {count > 0 && (
+        <span key={count} className="tabular inline-block motion-safe:animate-bump">
+          {count}
+        </span>
+      )}
+      {bursts.map((b) => (
+        <Icon
+          key={b.id}
+          aria-hidden
+          style={{ "--dx": `${b.dx}px` } as React.CSSProperties}
+          className="pointer-events-none absolute top-1 left-1/2 size-4 -ml-2 text-accent-2 animate-float-up"
+        />
+      ))}
+    </button>
   );
 }

@@ -142,7 +142,15 @@ export function Segmented<T extends string>({
   return (
     <fieldset className="flex flex-col gap-1.5">
       <legend className={hideLabel ? "sr-only" : "mb-1.5 text-sm font-medium text-muted"}>{label}</legend>
-      <div role="radiogroup" className="flex gap-1 rounded-md border border-border bg-surface/80 p-1">
+      <div role="radiogroup" className="relative flex rounded-md border border-border bg-surface/80 p-1">
+        <span
+          aria-hidden
+          className="absolute top-1 bottom-1 left-1 rounded-sm bg-surface-raised shadow-[inset_0_0_0_1px_rgb(183_156_255/0.55),0_6px_18px_-8px_rgb(183_156_255/0.6)] transition-transform duration-300 ease-[var(--ease-spring)]"
+          style={{
+            width: `calc((100% - 0.5rem) / ${options.length})`,
+            transform: `translateX(${Math.max(0, options.findIndex((o) => o.value === value)) * 100}%)`,
+          }}
+        />
         {options.map((o) => {
           const on = o.value === value;
           return (
@@ -152,7 +160,7 @@ export function Segmented<T extends string>({
               role="radio"
               aria-checked={on}
               onClick={() => onChange(o.value)}
-              className={`min-h-11 flex-1 rounded-sm px-2 text-sm font-medium transition-all ${on ? "bg-surface-raised text-text shadow-[inset_0_0_0_1px_rgb(183_156_255/0.55),0_6px_18px_-8px_rgb(183_156_255/0.6)]" : "text-muted"}`}
+              className={`relative min-h-11 flex-1 rounded-sm px-2 text-sm font-medium transition-colors duration-300 ${on ? "text-text" : "text-muted"}`}
             >
               {o.label}
             </button>

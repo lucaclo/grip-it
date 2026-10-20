@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, PageHeader, ProgressRing, SectionTitle } from "@/components/ui/bits";
+import { CountUp } from "@/components/ui/motion";
 import { leaderboard, myTargets, streakOf, weekStart, weeklyHardSets, weeklyVolume } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
 import { MUSCLE_LABEL, MUSCLES, VOLUME_BAND, volumeStatus } from "@/lib/science/volume";
@@ -51,7 +52,7 @@ export default function Home() {
     <>
       <PageHeader title={`${greeting}, ${me.name}`} subtitle={new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} />
 
-      <div className="flex flex-col gap-4">
+      <div className="stagger flex flex-col gap-4">
         {s.draft ? (
           <ButtonLink href="/log" size="lg" className="w-full">
             <Dumbbell aria-hidden className="size-5" /> Resume workout
@@ -69,15 +70,18 @@ export default function Home() {
           </Button>
         )}
 
-        <Link href="/compete" className="card-hero relative overflow-hidden rounded-xl p-5" aria-label={`This week: rank ${myRow?.rank ?? "none"}, ${streak}-week streak, ${hard} hard sets`}>
+        <Link href="/compete" className="card-hero shine relative overflow-hidden rounded-xl p-5" aria-label={`This week: rank ${myRow?.rank ?? "none"}, ${streak}-week streak, ${hard} hard sets`}>
           <p className="text-xs font-semibold uppercase tracking-widest text-text">This week</p>
           <div className="mt-1 flex items-end gap-2">
-            <span className="num-hero text-[4.5rem] leading-none">{myRow?.rank ? `#${myRow.rank}` : "—"}</span>
+            {myRow?.rank ? <CountUp value={myRow.rank} prefix="#" className="num-hero text-[4.5rem] leading-none" /> : <span className="num-hero text-[4.5rem] leading-none">—</span>}
             <span className="mb-2.5 text-sm text-text">in {s.groupName}</span>
           </div>
           <ol className="mt-4 flex justify-between" aria-label="Training days this week">
-            {week.map((d) => (
-              <li key={d.key} className="flex flex-col items-center gap-1" aria-label={`${d.name}: ${d.trained ? "trained" : d.future ? "to come" : "rest"}`}>
+            {week.map((d, i) => (
+              <li
+                key={d.key}
+                style={{ animationDelay: `${250 + i * 55}ms` }}
+                className="flex flex-col items-center gap-1 motion-safe:animate-pop" aria-label={`${d.name}: ${d.trained ? "trained" : d.future ? "to come" : "rest"}`}>
                 <span
                   className={`grid size-9 place-items-center rounded-full text-sm font-semibold ${
                     d.trained
@@ -101,12 +105,12 @@ export default function Home() {
           <div className="mt-4 grid grid-cols-2 gap-2">
             <div className="rounded-md bg-black/25 p-3 backdrop-blur-sm">
               <Flame aria-hidden className="size-5 text-volt" />
-              <p className="num-hero mt-1 text-stat leading-none">{streak}</p>
+              <CountUp value={streak} className="num-hero mt-1 block text-stat leading-none" />
               <p className="text-xs text-text">week streak</p>
             </div>
             <div className="rounded-md bg-black/25 p-3 backdrop-blur-sm">
               <Trophy aria-hidden className="size-5 text-volt" />
-              <p className="num-hero mt-1 text-stat leading-none">{hard}</p>
+              <CountUp value={hard} className="num-hero mt-1 block text-stat leading-none" />
               <p className="text-xs text-text">hard sets</p>
             </div>
           </div>

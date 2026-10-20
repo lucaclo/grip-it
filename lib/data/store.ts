@@ -61,8 +61,12 @@ type Actions = {
     patch: Partial<DraftSet>,
   ) => void;
   removeSet: (exIndex: number, setIndex: number) => void;
+  insertSet: (exIndex: number, setIndex: number, value: DraftSet) => void;
   markAllDone: () => void;
   setAutoTick: (on: boolean) => void;
+  startRest: (seconds?: number) => void;
+  adjustRest: (deltaSec: number) => void;
+  clearRest: () => void;
   finishWorkout: (
     title: string,
     isPrivate: boolean,
@@ -164,16 +168,48 @@ export const useStore = create<State & Actions>()(
         }),
       updateSet: (exIndex, setIndex, patch) =>
         mutateDraft(set, (d) => {
-          const next = { ...d.exercises[exIndex].sets[setIndex], ...patch };
+          const prev = d.exercises[exIndex].sets[setIndex];
+          const next = { ...prev, ...patch };
           if (d.autoTick && patch.done === undefined) next.done = next.reps > 0;
           d.exercises[exIndex].sets[setIndex] = next;
+          // Ticking a set by hand during a live session starts the rest timer.
+          if (patch.done === true && !prev.done && !d.autoTick && !d.editing) {
+            const sec = restFor(get().me?.goal);
+            d.restEndsAt = new Date(Date.now() + sec * 1000).toISOString();
+            d.restTotalSec = sec;
+          }
         }),
       removeSet: (exIndex, setIndex) =>
         mutateDraft(set, (d) => d.exercises[exIndex].sets.splice(setIndex, 1)),
+      insertSet: (exIndex, setIndex, value) =>
+        mutateDraft(set, (d) =>
+          d.exercises[exIndex]?.sets.splice(setIndex, 0, value),
+        ),
       markAllDone: () =>
         mutateDraft(set, (d) => {
           for (const e of d.exercises)
             for (const x of e.sets) if (x.reps > 0) x.done = true;
+        }),
+
+      startRest: (seconds) =>
+        mutateDraft(set, (d) => {
+          const sec = seconds ?? restFor(get().me?.goal);
+          d.restEndsAt = new Date(Date.now() + sec * 1000).toISOString();
+          d.restTotalSec = sec;
+        }),
+      adjustRest: (deltaSec) =>
+        mutateDraft(set, (d) => {
+          if (!d.restEndsAt) return;
+          const end = Math.max(
+            Date.now(),
+            Date.parse(d.restEndsAt) + deltaSec * 1000,
+          );
+          d.restEndsAt = new Date(end).toISOString();
+          d.restTotalSec = Math.max(1, (d.restTotalSec ?? 0) + deltaSec);
+        }),
+      clearRest: () =>
+        mutateDraft(set, (d) => {
+          d.restEndsAt = null;
         }),
 
       setAutoTick: (on) =>
@@ -211,7 +247,9 @@ export const useStore = create<State & Actions>()(
           exercises,
         };
         set((s) => ({
-          workouts: d.editing ? s.workouts.map((x) => (x.id === w.id ? w : x)) : [...s.workouts, w],
+          workouts: d.editing
+            ? s.workouts.map((x) => (x.id === w.id ? w : x))
+            : [...s.workouts, w],
           draft: null,
         }));
         return w.id;
@@ -256,8 +294,16 @@ export const useStore = create<State & Actions>()(
             clientId: w.id,
             startedAt: w.startedAt,
             autoTick: true,
-            editing: { id: w.id, title: w.title, isPrivate: w.isPrivate, endedAt: w.endedAt },
-            exercises: w.exercises.map((e) => ({ exerciseId: e.exerciseId, sets: e.sets.map((x) => ({ ...x, done: true })) })),
+            editing: {
+              id: w.id,
+              title: w.title,
+              isPrivate: w.isPrivate,
+              endedAt: w.endedAt,
+            },
+            exercises: w.exercises.map((e) => ({
+              exerciseId: e.exerciseId,
+              sets: e.sets.map((x) => ({ ...x, done: true })),
+            })),
           },
         });
         return true;
@@ -265,8 +311,12 @@ export const useStore = create<State & Actions>()(
 
       deleteWorkout: (id) =>
         set((s) => ({
-          workouts: s.workouts.filter((w) => !(w.id === id && w.userId === "me")),
-          reactions: Object.fromEntries(Object.entries(s.reactions).filter(([k]) => !k.includes(id))),
+          workouts: s.workouts.filter(
+            (w) => !(w.id === id && w.userId === "me"),
+          ),
+          reactions: Object.fromEntries(
+            Object.entries(s.reactions).filter(([k]) => !k.includes(id)),
+          ),
         })),
 
       resetAll: () => set(initialState()),
@@ -284,6 +334,11 @@ export const useStore = create<State & Actions>()(
     },
   ),
 );
+
+/** Default rest between sets: longer for heavy strength work. */
+export function restFor(goal: string | undefined) {
+  return goal === "strength" ? 180 : 120;
+}
 
 function mutateDraft(
   set: (fn: (s: State) => Partial<State>) => void,

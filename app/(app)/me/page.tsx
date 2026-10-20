@@ -44,7 +44,7 @@ export default function Me() {
   return (
     <>
       <PageHeader title="Me" />
-      <div className="flex flex-col gap-4">
+      <div className="stagger flex flex-col gap-4">
         <Card className="flex items-center gap-4">
           <Avatar name={me.name} you />
           <div className="flex-1">

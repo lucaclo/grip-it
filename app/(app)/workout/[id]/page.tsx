@@ -2,10 +2,11 @@
 
 import { ChevronRight, Flame, HelpCircle, Medal, Pencil, Trash2, Trophy } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, Citations, EmptyState, PageHeader, SectionTitle } from "@/components/ui/bits";
+import { Confetti } from "@/components/ui/motion";
 import { Sheet } from "@/components/ui/sheet";
 import { allPRs, exerciseMap, streakOf, suggestionFor, userName, volumeKg, workoutsOf } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
@@ -21,6 +22,14 @@ export default function WorkoutSummary() {
   const router = useRouter();
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [busyNote, setBusyNote] = useState(false);
+  // Fire confetti only when arriving straight from saving (?celebrate=1), then drop the flag from the URL.
+  const celebrate = useSearchParams().has("celebrate");
+  useEffect(() => {
+    if (!celebrate) return;
+    // Drop the flag after the burst so a refresh doesn't celebrate again.
+    const t = setTimeout(() => history.replaceState(null, "", location.pathname), 2500);
+    return () => clearTimeout(t);
+  }, [celebrate]);
 
   if (!w) return <EmptyState icon={<HelpCircle className="size-10" />} title="Workout not found" body="It may have been reset." />;
 
@@ -37,6 +46,7 @@ export default function WorkoutSummary() {
         subtitle={`${mine ? "Your" : `${userName(s, w.userId)}'s`} workout #${number} · ${new Date(w.startedAt).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}`}
       />
 
+      <Confetti fire={celebrate && prs.length > 0} />
       {prs.length > 0 && (
         <section className="mb-4 rounded-xl bg-gradient-to-br from-pr via-[#ffb38a] to-accent-2 p-4 text-on-pr shadow-[0_14px_40px_-12px_rgb(255_200_87/0.6)] motion-safe:animate-pop" role="status">
           <div className="flex items-center gap-2">

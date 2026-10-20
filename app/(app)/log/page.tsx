@@ -5,12 +5,13 @@ import {
   Check,
   Dumbbell,
   EllipsisVertical,
+  Minus,
   Plus,
   Target,
   Trash2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/bits";
 import { NumberField, Toggle } from "@/components/ui/fields";
@@ -18,6 +19,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { ExerciseSearch } from "@/components/workout/exercise-search";
 import { HistoryList } from "@/components/workout/history-list";
 import { PlateBar } from "@/components/plate-bar";
+import { RestTimer } from "@/components/workout/rest-timer";
 import {
   exerciseMap,
   historyFor,
@@ -97,14 +99,20 @@ export default function LogPage() {
         <div className="card-hero mb-6 flex flex-col items-center gap-3 rounded-xl px-5 py-6 text-center">
           <Dumbbell aria-hidden className="size-9 text-volt" />
           <p className="max-w-xs text-sm text-text">
-            Your session saves on your phone after every set, so nothing is lost if you close the app.
+            Your session saves on your phone after every set, so nothing is lost
+            if you close the app.
           </p>
           <Button size="lg" className="w-full" onClick={startWorkout}>
             Start workout
           </Button>
-          <p className="text-xs text-text">Logging one you&apos;ve already done? Start it, then turn on Auto-tick.</p>
+          <p className="text-xs text-text">
+            Logging one you&apos;ve already done? Start it, then turn on
+            Auto-tick.
+          </p>
         </div>
-        <h2 className="mb-3 font-display text-lg font-semibold uppercase tracking-wide">History</h2>
+        <h2 className="mb-3 font-display text-lg font-semibold uppercase tracking-wide">
+          History
+        </h2>
         <HistoryList />
       </>
     );
@@ -142,7 +150,9 @@ export default function LogPage() {
     setWhenDate(localDate(started));
     setWhenTime(localTime(started));
     const ended = draft!.editing ? Date.parse(draft!.editing.endedAt) : now;
-    setDurationMin(Math.max(1, Math.round((ended - started.getTime()) / 60_000)));
+    setDurationMin(
+      Math.max(1, Math.round((ended - started.getTime()) / 60_000)),
+    );
     if (draft!.editing) {
       setTitle((t) => t || draft!.editing!.title);
       setPrivate(draft!.editing.isPrivate);
@@ -158,7 +168,7 @@ export default function LogPage() {
     });
     setFinishOpen(false);
     setTitle("");
-    if (id) router.push(`/workout/${id}`);
+    if (id) router.push(`/workout/${id}?celebrate=1`);
   }
 
   function addExercise(exerciseId: string) {
@@ -187,13 +197,22 @@ export default function LogPage() {
             </p>
             <p className="tabular text-xl font-semibold" aria-live="off">
               {draft.editing
-                ? new Date(draft.startedAt).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })
+                ? new Date(draft.startedAt).toLocaleDateString("en-GB", {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short",
+                  })
                 : elapsed}
             </p>
           </div>
           <div className="text-right text-sm text-muted">
             <p>
-              <span className="tabular text-base text-text">{doneSets}</span>{" "}
+              <span
+                key={doneSets}
+                className="tabular inline-block text-base text-text motion-safe:animate-bump"
+              >
+                {doneSets}
+              </span>{" "}
               sets
             </p>
             <p>
@@ -206,7 +225,7 @@ export default function LogPage() {
         </div>
       </header>
 
-      <div className="flex flex-col gap-4 pt-4">
+      <div className="stagger flex flex-col gap-4 pt-4">
         <div className="card rounded-lg px-4 py-1">
           <Toggle
             label="Auto-tick sets"
@@ -245,6 +264,7 @@ export default function LogPage() {
       </div>
 
       <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.75rem)] z-10 mx-auto max-w-[480px] px-4 pb-3">
+        <RestTimer />
         {doneSets === 0 && draft.exercises.length > 0 && !draft.autoTick && (
           <p className="mb-2 text-center text-sm text-muted">
             Tap{" "}
@@ -262,10 +282,11 @@ export default function LogPage() {
           disabled={draft.exercises.length === 0}
           onClick={openFinish}
         >
-          <Check aria-hidden className="size-5" /> {draft.editing ? "Save changes" : "Finish"}
+          <Check aria-hidden className="size-5" />{" "}
+          {draft.editing ? "Save changes" : "Finish"}
         </Button>
       </div>
-      <div className="h-28" />
+      <div className="h-44" />
 
       <ExerciseSearch
         open={searchOpen}
@@ -293,7 +314,8 @@ export default function LogPage() {
               setDiscardOpen(false);
             }}
           >
-            <Trash2 aria-hidden className="size-5" /> {draft.editing ? "Discard changes" : "Discard"}
+            <Trash2 aria-hidden className="size-5" />{" "}
+            {draft.editing ? "Discard changes" : "Discard"}
           </Button>
           <Button variant="secondary" onClick={() => setDiscardOpen(false)}>
             Keep logging
@@ -441,7 +463,25 @@ function ExerciseCard({
   exerciseId: string;
 }) {
   const s = useStore();
-  const { draft, addSet, updateSet, removeSet, removeExerciseFromDraft } = s;
+  const {
+    draft,
+    addSet,
+    updateSet,
+    removeSet,
+    insertSet,
+    removeExerciseFromDraft,
+  } = s;
+  const [undo, setUndo] = useState<{ set: DraftSet; at: number } | null>(null);
+  useEffect(() => {
+    if (!undo) return;
+    const t = setTimeout(() => setUndo(null), 8000);
+    return () => clearTimeout(t);
+  }, [undo]);
+  function removeWithUndo(j: number) {
+    const removed = draft!.exercises[index].sets[j];
+    removeSet(index, j);
+    setUndo({ set: removed, at: j });
+  }
   const [menu, setMenu] = useState(false);
   const rir = s.me?.rirEnabled ?? false;
   const isBarbell = exerciseMap(s).get(exerciseId)?.equipment === "barbell";
@@ -476,7 +516,9 @@ function ExerciseCard({
                 {target.targetKg} kg × {target.targetReps}
               </span>
             </span>
-            <span className="rounded-full bg-volt/15 px-2 py-0.5 text-xs font-semibold text-volt">{target.label}</span>
+            <span className="rounded-full bg-volt/15 px-2 py-0.5 text-xs font-semibold text-volt">
+              {target.label}
+            </span>
           </p>
           {isBarbell && (
             <div className="mt-2">
@@ -499,72 +541,107 @@ function ExerciseCard({
         {e.sets.map((set, j) => {
           const prev = previous?.sets[j];
           return (
-            <div
-              key={j}
-              className={`grid min-h-13 items-center gap-1 rounded-md px-2 ${set.done ? "bg-success/12" : ""} ${rir ? "grid-cols-[2rem_1fr_4.5rem_4rem_3.5rem_2.75rem]" : "grid-cols-[2rem_1fr_4.5rem_4rem_2.75rem]"}`}
+            <SwipeToDelete
+              key={`${j}-${e.sets.length}`}
+              onDelete={() => removeWithUndo(j)}
+              label={`Set ${j + 1}, swipe left to delete`}
             >
-              <button
-                type="button"
-                onClick={() =>
-                  updateSet(index, j, { type: NEXT_TYPE[set.type] })
-                }
-                aria-label={`Set ${j + 1}, ${TYPE_NAME[set.type]}. Tap to change type`}
-                className={`tabular -ml-2 grid h-11 w-10 place-items-center text-base ${set.type === "failure" ? "text-danger" : set.type === "normal" ? "text-muted" : "text-warning"}`}
+              <div
+                className={`grid min-h-13 items-center gap-1 rounded-md px-2 transition-colors duration-300 ${set.done ? "bg-success/12 row-sweep" : "bg-surface"} ${rir ? "grid-cols-[2rem_1fr_4.5rem_4rem_3.5rem_2.75rem]" : "grid-cols-[2rem_1fr_4.5rem_4rem_2.75rem]"}`}
               >
-                {TYPE_SHORT[set.type] ?? j + 1}
-              </button>
-              <span className="tabular truncate text-sm text-subtle">
-                {prev ? `${prev.kg} × ${prev.reps}` : "—"}
-              </span>
-              <SetInput
-                label={`Set ${j + 1} kilograms`}
-                value={set.kg}
-                decimal
-                onChange={(v) => updateSet(index, j, { kg: v ?? 0 })}
-              />
-              <SetInput
-                label={`Set ${j + 1} reps`}
-                value={set.reps}
-                onChange={(v) =>
-                  updateSet(index, j, { reps: Math.round(v ?? 0) })
-                }
-              />
-              {rir && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateSet(index, j, { type: NEXT_TYPE[set.type] })
+                  }
+                  aria-label={`Set ${j + 1}, ${TYPE_NAME[set.type]}. Tap to change type`}
+                  className={`tabular -ml-2 grid h-11 w-10 place-items-center text-base ${set.type === "failure" ? "text-danger" : set.type === "normal" ? "text-muted" : "text-warning"}`}
+                >
+                  {TYPE_SHORT[set.type] ?? j + 1}
+                </button>
+                <span className="tabular truncate text-sm text-subtle">
+                  {prev ? `${prev.kg} × ${prev.reps}` : "—"}
+                </span>
                 <SetInput
-                  label={`Set ${j + 1} reps in reserve`}
-                  value={set.rir}
+                  label={`Set ${j + 1} kilograms`}
+                  value={set.kg}
+                  decimal
+                  onChange={(v) => updateSet(index, j, { kg: v ?? 0 })}
+                />
+                <SetInput
+                  label={`Set ${j + 1} reps`}
+                  value={set.reps}
                   onChange={(v) =>
-                    updateSet(index, j, {
-                      rir: v == null ? null : Math.min(10, Math.round(v)),
-                    })
+                    updateSet(index, j, { reps: Math.round(v ?? 0) })
                   }
                 />
-              )}
-              <button
-                type="button"
-                aria-label={
-                  set.done
-                    ? `Set ${j + 1} done, tap to undo`
-                    : `Mark set ${j + 1} done`
-                }
-                aria-pressed={set.done}
-                onClick={() => updateSet(index, j, { done: !set.done })}
-                disabled={!set.done && (set.reps <= 0 || set.kg < 0)}
-                className={`grid size-11 place-items-center rounded-md transition-colors disabled:opacity-40 ${set.done ? "bg-success text-on-accent shadow-[0_6px_18px_-6px_rgb(75_227_160/0.7)] motion-safe:animate-tick" : "border border-success/50 bg-surface-raised text-success"}`}
-              >
-                <Check aria-hidden className="size-5" strokeWidth={3} />
-              </button>
-            </div>
+                {rir && (
+                  <SetInput
+                    label={`Set ${j + 1} reps in reserve`}
+                    value={set.rir}
+                    onChange={(v) =>
+                      updateSet(index, j, {
+                        rir: v == null ? null : Math.min(10, Math.round(v)),
+                      })
+                    }
+                  />
+                )}
+                <button
+                  type="button"
+                  aria-label={
+                    set.done
+                      ? `Set ${j + 1} done, tap to undo`
+                      : `Mark set ${j + 1} done`
+                  }
+                  aria-pressed={set.done}
+                  onClick={() => updateSet(index, j, { done: !set.done })}
+                  disabled={!set.done && (set.reps <= 0 || set.kg < 0)}
+                  className={`grid size-11 place-items-center rounded-md transition-colors disabled:opacity-40 ${set.done ? "bg-success text-on-accent shadow-[0_6px_18px_-6px_rgb(75_227_160/0.7)] motion-safe:animate-tick" : "border border-success/50 bg-surface-raised text-success"}`}
+                >
+                  <Check aria-hidden className="size-5" strokeWidth={3} />
+                </button>
+              </div>
+            </SwipeToDelete>
           );
         })}
       </div>
-      <button
-        type="button"
-        onClick={() => addSet(index)}
-        className="flex min-h-12 w-full items-center justify-center gap-2 border-t border-border text-sm font-medium text-muted"
-      >
-        <Plus aria-hidden className="size-4" /> Add set
-      </button>
+      <div className="grid grid-cols-2 border-t border-border">
+        <button
+          type="button"
+          onClick={() => addSet(index)}
+          className="flex min-h-12 items-center justify-center gap-2 text-sm font-medium text-muted active:bg-surface-raised"
+        >
+          <Plus aria-hidden className="size-4" /> Add set
+        </button>
+        <button
+          type="button"
+          disabled={e.sets.length === 0}
+          onClick={() => removeWithUndo(e.sets.length - 1)}
+          className="flex min-h-12 items-center justify-center gap-2 border-l border-border text-sm font-medium text-muted active:bg-surface-raised disabled:opacity-40"
+        >
+          <Minus aria-hidden className="size-4" /> Remove set
+        </button>
+      </div>
+      {undo && (
+        <div
+          role="status"
+          className="flex items-center gap-3 border-t border-border px-4 py-1 text-sm motion-safe:animate-rise"
+        >
+          <span className="flex-1 text-muted">
+            Set {undo.at + 1} removed ({undo.set.kg} kg × {undo.set.reps})
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              insertSet(index, undo.at, undo.set);
+              setUndo(null);
+            }}
+            className="min-h-11 rounded-md px-3 font-semibold text-accent"
+          >
+            Undo
+          </button>
+        </div>
+      )}
 
       <Sheet open={menu} onClose={() => setMenu(false)} title={name}>
         <div className="flex flex-col gap-2">
@@ -655,5 +732,82 @@ function SetInput({
       }}
       className="tabular h-11 w-full rounded-md bg-surface-raised text-center text-lg outline-none placeholder:text-subtle focus:ring-2 focus:ring-focus"
     />
+  );
+}
+
+/** Swipe a row left to delete it. The Remove set button is the non-gesture alternative. */
+function SwipeToDelete({
+  children,
+  onDelete,
+  label,
+}: {
+  children: React.ReactNode;
+  onDelete: () => void;
+  label: string;
+}) {
+  const [dx, setDx] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const start = useRef<{ x: number; y: number; locked: boolean | null } | null>(
+    null,
+  );
+  const dxRef = useRef(0); // latest distance; state can lag a fast swipe
+  const THRESHOLD = 96;
+  const reset = () => {
+    start.current = null;
+    dxRef.current = 0;
+    setDragging(false);
+    setDx(0);
+  };
+  return (
+    <div
+      className="relative overflow-hidden rounded-md"
+      aria-label={label}
+      role="group"
+    >
+      {dx < 0 && (
+        <div
+          aria-hidden
+          className={`absolute inset-0 flex items-center justify-end rounded-md pr-4 text-on-danger transition-colors ${dx < -THRESHOLD ? "bg-danger" : "bg-danger/60"}`}
+        >
+          <Trash2
+            className={`size-5 transition-transform ${dx < -THRESHOLD ? "scale-125" : ""}`}
+          />
+        </div>
+      )}
+      <div
+        className={`relative touch-pan-y select-none ${dragging ? "" : "transition-transform duration-300 ease-[var(--ease-spring)]"}`}
+        style={{ transform: dx ? `translateX(${dx}px)` : undefined }}
+        onPointerDown={(e) => {
+          start.current = { x: e.clientX, y: e.clientY, locked: null };
+        }}
+        onPointerMove={(e) => {
+          const st = start.current;
+          if (!st) return;
+          const mx = e.clientX - st.x;
+          const my = e.clientY - st.y;
+          if (st.locked === null && (Math.abs(mx) > 10 || Math.abs(my) > 10)) {
+            st.locked = Math.abs(mx) > Math.abs(my) && mx < 0;
+            if (st.locked) {
+              setDragging(true);
+              e.currentTarget.setPointerCapture(e.pointerId);
+            }
+          }
+          if (st.locked) {
+            dxRef.current = Math.min(0, mx);
+            setDx(dxRef.current);
+          }
+        }}
+        onPointerUp={() => {
+          if (dxRef.current < -THRESHOLD) {
+            navigator.vibrate?.(20);
+            onDelete();
+          }
+          reset();
+        }}
+        onPointerCancel={reset}
+      >
+        {children}
+      </div>
+    </div>
   );
 }

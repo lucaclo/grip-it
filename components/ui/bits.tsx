@@ -1,8 +1,9 @@
 "use client";
 
 import { BookOpen, ExternalLink, ShieldCheck } from "lucide-react";
-import { useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 import { citations, type Citation } from "@/lib/science/citations";
+import { CountUp } from "./motion";
 import { Sheet } from "./sheet";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -21,7 +22,7 @@ export function SectionTitle({ children, action }: { children: ReactNode; action
 export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
   return (
     <header className="pt-safe">
-      <div className="flex items-end gap-3 pt-5 pb-4">
+      <div className="flex items-end gap-3 pt-5 pb-4 motion-safe:animate-enter">
         <div className="flex-1">
           <h1 className="text-brand font-display text-display font-bold uppercase leading-none">{title}</h1>
           {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
@@ -70,6 +71,11 @@ export function ProgressRing({
 }) {
   const gid = useId();
   const pct = target > 0 ? value / target : 0;
+  const [shown, setShown] = useState(false); // start empty, then fill (CSS transition does the motion)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
   const r = size / 2 - 7;
   const c = 2 * Math.PI * r;
   const met = pct >= 1;
@@ -94,13 +100,13 @@ export function ProgressRing({
             strokeWidth={7}
             strokeLinecap="round"
             strokeDasharray={c}
-            strokeDashoffset={c * (1 - Math.min(pct, 1))}
-            className="transition-[stroke-dashoffset] duration-500"
+            strokeDashoffset={shown ? c * (1 - Math.min(pct, 1)) : c}
+            className="transition-[stroke-dashoffset] duration-[1100ms] ease-[var(--ease-standard)]"
           />
         </svg>
         <div className="absolute inset-0 grid place-items-center text-center">
           <div>
-            <div className="tabular text-xl font-semibold leading-none">{Math.round(value)}</div>
+            <CountUp value={Math.round(value)} className="num-hero block text-xl leading-none" />
             <div className="text-xs text-subtle">/ {Math.round(target)}</div>
           </div>
         </div>

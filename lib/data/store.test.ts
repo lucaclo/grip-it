@@ -89,3 +89,43 @@ describe("editing saved workouts", () => {
     expect(ws.some((w) => w.id === "f-sam-w0")).toBe(true);
   });
 });
+
+describe("rest timer", () => {
+  beforeEach(() => {
+    useStore.getState().resetAll();
+    useStore.getState().startWorkout();
+    useStore.getState().addExerciseToDraft("bench-press", [set(60, 8), set(60, 8)]);
+  });
+
+  it("ticking a set starts a 2-minute rest; +15 and skip adjust it", () => {
+    const t0 = Date.now();
+    useStore.getState().updateSet(0, 0, { done: true });
+    const d = useStore.getState().draft!;
+    const left = Date.parse(d.restEndsAt!) - t0;
+    expect(left).toBeGreaterThan(119_000);
+    expect(left).toBeLessThan(121_500);
+    useStore.getState().adjustRest(15);
+    expect(useStore.getState().draft!.restTotalSec).toBe(135);
+    useStore.getState().clearRest();
+    expect(useStore.getState().draft!.restEndsAt).toBeNull();
+  });
+
+  it("auto-tick and un-ticking don't start a rest", () => {
+    useStore.getState().setAutoTick(true);
+    useStore.getState().updateSet(0, 1, { reps: 9 });
+    expect(useStore.getState().draft!.restEndsAt ?? null).toBeNull();
+  });
+});
+
+describe("remove set with undo", () => {
+  it("insertSet puts a removed set back in its original place", () => {
+    useStore.getState().resetAll();
+    useStore.getState().startWorkout();
+    useStore.getState().addExerciseToDraft("bench-press", [set(60, 8), set(62.5, 6), set(60, 7)]);
+    const removed = useStore.getState().draft!.exercises[0].sets[1];
+    useStore.getState().removeSet(0, 1);
+    expect(useStore.getState().draft!.exercises[0].sets).toHaveLength(2);
+    useStore.getState().insertSet(0, 1, removed);
+    expect(useStore.getState().draft!.exercises[0].sets.map((x) => x.kg)).toEqual([60, 62.5, 60]);
+  });
+});
