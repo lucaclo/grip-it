@@ -26,6 +26,16 @@ import {
 import { useStore } from "@/lib/data/store";
 import type { ReactionCode } from "@/lib/data/types";
 
+// Each reaction has its own colour, so a post's mood reads at a glance. Full class strings for Tailwind.
+type Tone = { on: string; count: string; burst: string };
+const TONES: Record<ReactionCode, Tone> = {
+  flame: { on: "border-warning/70 bg-warning/18 text-warning shadow-[0_6px_18px_-6px_rgb(255_200_87/0.6)]", count: "text-warning", burst: "text-warning" },
+  muscle: { on: "border-volt/70 bg-volt/15 text-volt shadow-glow-volt", count: "text-volt", burst: "text-volt" },
+  laugh: { on: "border-accent-2/70 bg-accent-2/18 text-accent-2 shadow-[0_6px_18px_-6px_rgb(229_139_255/0.6)]", count: "text-accent-2", burst: "text-accent-2" },
+  metal: { on: "border-accent/70 bg-accent/18 text-accent shadow-glow", count: "text-accent", burst: "text-accent" },
+  skull: { on: "border-muted/60 bg-muted/15 text-text", count: "text-text", burst: "text-muted" },
+};
+
 const REACTIONS: { code: ReactionCode; label: string; Icon: LucideIcon }[] = [
   { code: "flame", label: "Fire", Icon: Flame },
   { code: "muscle", label: "Strong", Icon: BicepsFlexed },
@@ -223,6 +233,7 @@ export default function Feed() {
                             count={count}
                             label={label}
                             Icon={Icon}
+                            tone={TONES[code]}
                             onToggle={() => s.toggleReaction(it.id, code)}
                           />
                         );
@@ -244,12 +255,14 @@ function ReactionButton({
   count,
   label,
   Icon,
+  tone,
   onToggle,
 }: {
   on: boolean;
   count: number;
   label: string;
   Icon: LucideIcon;
+  tone: Tone;
   onToggle: () => void;
 }) {
   const { bursts, fire } = useBurst();
@@ -262,7 +275,7 @@ function ReactionButton({
         if (!on) fire();
         onToggle();
       }}
-      className={`relative flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-full border px-2.5 text-sm transition-all duration-200 active:scale-90 ${on ? "border-accent bg-brand text-on-accent shadow-glow" : "border-border text-muted"}`}
+      className={`relative flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-full border px-2.5 text-sm transition-all duration-200 active:scale-90 ${on ? tone.on : count > 0 ? "border-border text-muted" : "border-border/60 text-subtle"}`}
     >
       <Icon
         aria-hidden
@@ -271,7 +284,7 @@ function ReactionButton({
       {count > 0 && (
         <span
           key={count}
-          className="tabular inline-block motion-safe:animate-bump"
+          className={`tabular inline-block motion-safe:animate-bump ${tone.count}`}
         >
           {count}
         </span>
@@ -281,7 +294,7 @@ function ReactionButton({
           key={b.id}
           aria-hidden
           style={{ "--dx": `${b.dx}px` } as React.CSSProperties}
-          className="pointer-events-none absolute top-1 left-1/2 size-4 -ml-2 text-accent-2 animate-float-up"
+          className={`pointer-events-none absolute top-1 left-1/2 size-4 -ml-2 animate-float-up ${tone.burst}`}
         />
       ))}
     </button>

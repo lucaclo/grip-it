@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, Citations, EmptyState, PageHeader, SectionTitle } from "@/components/ui/bits";
 import { Confetti } from "@/components/ui/motion";
+import { PlateBar } from "@/components/plate-bar";
 import { Sheet } from "@/components/ui/sheet";
 import { allPRs, exerciseMap, streakOf, suggestionFor, userName, volumeKg, workoutsOf } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
@@ -57,11 +58,18 @@ export default function WorkoutSummary() {
           </div>
           <ul className="mt-2 flex flex-col gap-1">
             {prs.map((p) => (
-              <li key={p.id} className="flex justify-between gap-2 text-base">
-                <span>{ex.get(p.exerciseId)?.name}</span>
-                <span className="num-hero text-lg">
-                  {p.kg} × {p.reps} · e1RM {p.e1rm} kg
+              <li key={p.id} className="flex flex-col gap-2">
+                <span className="flex justify-between gap-2 text-base">
+                  <span>{ex.get(p.exerciseId)?.name}</span>
+                  <span className="num-hero text-lg">
+                    {p.kg} × {p.reps} · e1RM {p.e1rm} kg
+                  </span>
                 </span>
+                {ex.get(p.exerciseId)?.equipment === "barbell" && (
+                  <span className="block rounded-md bg-bg/85 py-2">
+                    <PlateBar kg={p.kg} />
+                  </span>
+                )}
               </li>
             ))}
           </ul>
