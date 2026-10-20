@@ -117,7 +117,7 @@ export const useStore = create<State & Actions>()(
         const exercises = d.exercises
           .map((e) => ({
             exerciseId: e.exerciseId,
-            sets: e.sets.filter((x) => x.done && x.reps > 0).map(({ done: _done, ...rest }) => rest),
+            sets: e.sets.filter((x) => x.done && x.reps > 0).map(({ kg, reps, rir, type }) => ({ kg, reps, rir, type })),
           }))
           .filter((e) => e.sets.length > 0);
         if (!exercises.length) return null;

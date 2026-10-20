@@ -1,26 +1,116 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Grip It design tokens: generated from replica/design/tokens.json (contrast-checked, 0 AA failures).
+   Components use roles only (bg-surface, text-muted, border-input), never raw hex. */
+@theme {
+  --color-bg: #0b0b0d;
+  --color-surface: #16171b;
+  --color-surface-raised: #202228;
+  --color-border: #2e3139;
+  --color-border-input: #70757f;
+  --color-text: #f4f4f2;
+  --color-muted: #a3a6ae;
+  --color-subtle: #868a93;
+  --color-accent: #d4ff3a;
+  --color-on-accent: #0b0b0d;
+  --color-danger: #ff6369;
+  --color-on-danger: #0b0b0d;
+  --color-success: #3ddc97;
+  --color-warning: #ffc53d;
+  --color-pr: #ffc53d;
+  --color-on-pr: #0b0b0d;
+  --color-rank-gold: #ffc53d;
+  --color-rank-silver: #c9cdd4;
+  --color-rank-bronze: #e0915a;
+  --color-focus: #d4ff3a;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-display: var(--font-barlow-condensed), "Arial Narrow", system-ui, sans-serif;
+  --font-sans: var(--font-barlow), system-ui, -apple-system, sans-serif;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.625rem;
+  --text-xl: 1.75rem;
+  --text-xl--line-height: 2rem;
+  --text-display: 2.5rem;
+  --text-display--line-height: 2.75rem;
+  --text-stat: 2rem;
+  --text-stat--line-height: 2.25rem;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --animate-pop: pop 420ms var(--ease-spring) both;
+  --animate-rise: rise 200ms var(--ease-standard) both;
+
+  @keyframes pop {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes rise {
+    0% { transform: translateY(12px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+
+  .tabular {
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  /* Hide number spinners: steppers are our own buttons. */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  dialog::backdrop {
+    background: rgb(0 0 0 / 0.6);
+  }
+
+  input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+}
+
+.pt-safe { padding-top: env(safe-area-inset-top); }
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

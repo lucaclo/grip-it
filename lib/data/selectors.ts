@@ -279,6 +279,8 @@ export function leaderboard(s: State, metric: Metric): Row[] {
       }
     }
   });
+  // Nobody gets a medal for zero: 0 hard sets or a 0-week streak is listed but unranked.
+  for (const r of rows) if (r.score === 0 && (metric === "hard_sets" || metric === "streak")) r.score = null;
   const ranked = rows.filter((r) => r.score != null).sort((a, b) => b.score! - a.score!);
   let rank = 0;
   ranked.forEach((r, i) => {
