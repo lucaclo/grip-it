@@ -75,6 +75,7 @@ type Actions = {
   addCustomExercise: (e: Omit<Exercise, "id" | "custom">) => Exercise;
   logWeight: (kg: number, day?: string) => void;
   logNutrition: (n: Omit<NutritionDay, "day">, day?: string) => void;
+  addNutrition: (delta: Omit<NutritionDay, "day">, day?: string) => void;
   toggleReaction: (feedId: string, code: ReactionCode) => void;
   editWorkout: (id: string) => boolean;
   deleteWorkout: (id: string) => void;
@@ -268,6 +269,18 @@ export const useStore = create<State & Actions>()(
             { day, kg },
           ].sort((a, b) => a.day.localeCompare(b.day)),
         })),
+      addNutrition: (delta, day = today()) =>
+        set((s) => {
+          const cur = s.nutrition.find((x) => x.day === day) ?? { day, kcal: 0, proteinG: 0 };
+          const next = {
+            day,
+            kcal: Math.max(0, cur.kcal + delta.kcal),
+            proteinG: Math.max(0, cur.proteinG + delta.proteinG),
+          };
+          return {
+            nutrition: [...s.nutrition.filter((x) => x.day !== day), next].sort((a, b) => a.day.localeCompare(b.day)),
+          };
+        }),
       logNutrition: (n, day = today()) =>
         set((s) => ({
           nutrition: [

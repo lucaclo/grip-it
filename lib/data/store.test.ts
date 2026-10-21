@@ -129,3 +129,16 @@ describe("remove set with undo", () => {
     expect(useStore.getState().draft!.exercises[0].sets.map((x) => x.kg)).toEqual([60, 62.5, 60]);
   });
 });
+
+describe("quick nutrition", () => {
+  it("adds to today's totals, and a negative add undoes it without going below zero", () => {
+    useStore.getState().resetAll();
+    const st = useStore.getState();
+    st.addNutrition({ kcal: 120, proteinG: 25 }, "2026-10-21");
+    st.addNutrition({ kcal: 600, proteinG: 40 }, "2026-10-21");
+    expect(useStore.getState().nutrition.find((n) => n.day === "2026-10-21")).toMatchObject({ kcal: 720, proteinG: 65 });
+    st.addNutrition({ kcal: -600, proteinG: -40 }, "2026-10-21");
+    st.addNutrition({ kcal: -999, proteinG: -999 }, "2026-10-21");
+    expect(useStore.getState().nutrition.find((n) => n.day === "2026-10-21")).toMatchObject({ kcal: 0, proteinG: 0 });
+  });
+});

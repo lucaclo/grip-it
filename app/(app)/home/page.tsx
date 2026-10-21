@@ -131,10 +131,13 @@ export default function Home() {
             Today
           </SectionTitle>
           {t ? (
-            <div className="flex justify-around">
-              <ProgressRing label="Calories" unit="kcal" value={n?.kcal ?? 0} target={t.kcal} />
-              <ProgressRing label="Protein" unit="g" value={n?.proteinG ?? 0} target={t.proteinG} />
-            </div>
+            <>
+              <div className="flex justify-around">
+                <ProgressRing label="Calories" unit="kcal" value={n?.kcal ?? 0} target={t.kcal} />
+                <ProgressRing label="Protein" unit="g" value={n?.proteinG ?? 0} target={t.proteinG} />
+              </div>
+              <QuickAdd />
+            </>
           ) : (
             <p className="text-muted">Log your weight to get targets.</p>
           )}
@@ -151,18 +154,19 @@ export default function Home() {
             Needs work this week
           </SectionTitle>
           {needsWork.length ? (
-            <ul className="flex flex-col gap-3">
-              {needsWork.map(({ m, sets }) => (
+            <ul className="grid grid-cols-3 gap-2">
+              {needsWork.map(({ m, sets }, i) => (
                 <li key={m}>
-                  <div className="mb-1 flex justify-between text-sm">
-                    <span>{MUSCLE_LABEL[m]}</span>
-                    <span className="tabular text-muted">
-                      {sets} / {VOLUME_BAND.min} sets
-                    </span>
-                  </div>
-                  <div className="h-2 rounded-full bg-surface-raised">
-                    <div className="h-2 rounded-full bg-brand" style={{ width: `${Math.min(100, (sets / VOLUME_BAND.min) * 100)}%` }} />
-                  </div>
+                  <Link
+                    href="/volume"
+                    transitionTypes={["drill-in"]}
+                    className="press flex flex-col items-center gap-1.5 rounded-md bg-surface-raised/60 px-2 py-3 text-center"
+                    aria-label={`${MUSCLE_LABEL[m]}: ${sets} of ${VOLUME_BAND.min} sets`}
+                  >
+                    <MiniRing pct={sets / VOLUME_BAND.min} delay={i * 120} label={String(sets)} />
+                    <span className="text-xs leading-tight text-text">{MUSCLE_LABEL[m]}</span>
+                    <span className="text-[0.6875rem] text-subtle">of {VOLUME_BAND.min} sets</span>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -241,5 +245,100 @@ function GoalRing({ done, goal, className = "" }: { done: number; goal: number; 
         </div>
       </div>
     </div>
+  );
+}
+
+const QUICK = [
+  { label: "Shake", kcal: 120, proteinG: 25 },
+  { label: "Snack", kcal: 250, proteinG: 10 },
+  { label: "Meal", kcal: 600, proteinG: 40 },
+  { label: "Big meal", kcal: 900, proteinG: 50 },
+] as const;
+
+/** One-tap estimates for today's totals, with an undo for the last tap. Exact numbers live on the Body screen. */
+function QuickAdd() {
+  const add = useStore((s) => s.addNutrition);
+  const [last, setLast] = useState<(typeof QUICK)[number] | null>(null);
+  const [taps, setTaps] = useState(0); // re-keys the confirmation so it animates on every tap
+  useEffect(() => {
+    if (!last) return;
+    const t = setTimeout(() => setLast(null), 6000);
+    return () => clearTimeout(t);
+  }, [last]);
+  return (
+    <div className="mt-4">
+      <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Quick add food">
+        {QUICK.map((q) => (
+          <button
+            key={q.label}
+            type="button"
+            onClick={() => {
+              add(q);
+              setLast(q);
+              setTaps((n) => n + 1);
+            }}
+            aria-label={`Add ${q.label.toLowerCase()}: ${q.kcal} kcal, ${q.proteinG} g protein`}
+            className="press flex min-h-12 shrink-0 flex-col items-start justify-center rounded-md border border-border bg-surface-raised/70 px-3 text-left"
+          >
+            <span className="text-sm font-semibold">+ {q.label}</span>
+            <span className="tabular text-xs text-subtle">
+              {q.kcal} kcal · {q.proteinG} g
+            </span>
+          </button>
+        ))}
+      </div>
+      <div className="mt-2 flex min-h-11 items-center justify-between text-sm" role="status" aria-live="polite">
+        {last ? (
+          <>
+            <span key={taps} className="text-success motion-safe:animate-rise">
+              Added {last.label.toLowerCase()}: {last.kcal} kcal, {last.proteinG} g protein
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                add({ kcal: -last.kcal, proteinG: -last.proteinG });
+                setLast(null);
+              }}
+              className="min-h-11 px-2 font-semibold text-accent"
+            >
+              Undo
+            </button>
+          </>
+        ) : (
+          <span className="text-subtle">Rough estimates. Exact totals on the Body screen.</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MiniRing({ pct, label, delay = 0 }: { pct: number; label: string; delay?: number }) {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  const r = 22;
+  const c = 2 * Math.PI * r;
+  return (
+    <span className="relative grid size-14 place-items-center" aria-hidden>
+      <svg viewBox="0 0 52 52" className="absolute inset-0 -rotate-90">
+        <circle cx="26" cy="26" r={r} fill="none" stroke="rgb(0 0 0 / 0.3)" strokeWidth="5" />
+        <circle
+          cx="26"
+          cy="26"
+          r={r}
+          fill="none"
+          stroke="var(--color-accent)"
+          strokeWidth="5"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={shown ? c * (1 - Math.min(1, pct)) : c}
+          className="transition-[stroke-dashoffset] duration-[1200ms] ease-[var(--ease-expo)]"
+          style={{ transitionDelay: `${delay}ms` }}
+        />
+      </svg>
+      <span className="num-hero text-lg">{label}</span>
+    </span>
   );
 }
