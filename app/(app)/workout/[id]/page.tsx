@@ -6,7 +6,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, Citations, EmptyState, PageHeader, SectionTitle } from "@/components/ui/bits";
-import { Confetti } from "@/components/ui/motion";
+import { Confetti, CountUp } from "@/components/ui/motion";
 import { PlateBar } from "@/components/plate-bar";
 import { Sheet } from "@/components/ui/sheet";
 import { allPRs, exerciseMap, streakOf, suggestionFor, userName, volumeKg, workoutsOf } from "@/lib/data/selectors";
@@ -76,15 +76,19 @@ export default function WorkoutSummary() {
         </section>
       )}
 
-      <dl className="mb-4 grid grid-cols-3 gap-2 text-center">
-        {[
-          ["Time", `${mins} min`],
-          ["Sets", String(sets)],
-          ["Volume", `${Math.round(volumeKg(w))} kg`],
-        ].map(([k, v]) => (
-          <div key={k} className="card rounded-md p-3">
-            <dt className="text-xs text-subtle">{k}</dt>
-            <dd className="tabular text-xl font-semibold">{v}</dd>
+      <dl className="card-hero mb-4 grid grid-cols-3 divide-x divide-white/10 rounded-xl py-4 text-center">
+        {(
+          [
+            ["Time", mins, " min"],
+            ["Sets", sets, ""],
+            ["Volume", Math.round(volumeKg(w)), " kg"],
+          ] as const
+        ).map(([k, v, unit]) => (
+          <div key={k} className="flex flex-col-reverse px-2">
+            <dt className="text-xs uppercase tracking-widest text-text">{k}</dt>
+            <dd>
+              <CountUp value={v} suffix={unit} duration={1100} className="num-hero text-2xl" />
+            </dd>
           </div>
         ))}
       </dl>

@@ -1,7 +1,7 @@
 "use client";
 
-import { Crown, Info, Medal, TriangleAlert, UserPlus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Crown, Flag, Info, Medal, TriangleAlert, UserPlus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Avatar, Card, Citations, PageHeader, SectionTitle } from "@/components/ui/bits";
 import { Segmented } from "@/components/ui/fields";
 import { CountUp } from "@/components/ui/motion";
@@ -114,30 +114,7 @@ export default function Compete() {
 
         <section>
           <SectionTitle>Weekly challenge</SectionTitle>
-          <Card>
-            <p className="font-display text-xl font-semibold">{challenge.title}</p>
-            <p className="text-sm text-muted">Ends Sunday midnight · {challenge.daysLeft} day{challenge.daysLeft === 1 ? "" : "s"} left</p>
-            <ul className="mt-3 flex flex-col gap-2">
-              {challenge.rows.map((r, i) => (
-                <li key={r.userId}>
-                  <div className="mb-1 flex justify-between text-sm">
-                    <span className={r.userId === "me" ? "text-accent" : ""}>
-                      {i + 1}. {r.name}
-                    </span>
-                    <span className="tabular text-muted">
-                      {r.score} / {challenge.goal}
-                    </span>
-                  </div>
-                  <div className="h-2 rounded-full bg-surface-raised">
-                    <div
-                      className={`h-2 rounded-full ${r.score >= challenge.goal ? "bg-success" : "bg-brand"}`}
-                      style={{ width: `${Math.min(100, (r.score / challenge.goal) * 100)}%` }}
-                    />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </Card>
+          <RaceTrack challenge={challenge} />
         </section>
 
         <button
@@ -219,5 +196,71 @@ function Podium({ rows, flagged }: { rows: ReturnType<typeof leaderboard>; flagg
         );
       })}
     </ol>
+  );
+}
+
+/** Weekly challenge as a race: everyone's avatar runs along their own lane toward the finish flag. */
+function RaceTrack({ challenge }: { challenge: ReturnType<typeof weeklyChallenge> }) {
+  const [go, setGo] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setGo(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  const leader = challenge.rows[0];
+  return (
+    <div className="card-hero rounded-xl p-4">
+      <div className="flex items-start gap-3">
+        <div className="flex-1">
+          <p className="font-display text-xl font-semibold">{challenge.title}</p>
+          <p className="text-sm text-text">
+            {leader && leader.score > 0 ? `${leader.name} leads with ${leader.score}` : "Nobody's started yet"} ·{" "}
+            {challenge.daysLeft} day{challenge.daysLeft === 1 ? "" : "s"} left
+          </p>
+        </div>
+        <Flag aria-hidden className="size-6 text-volt" />
+      </div>
+      <ol className="mt-4 flex flex-col gap-3" aria-label="Race standings">
+        {challenge.rows.map((r, i) => {
+          const pct = Math.min(1, r.score / challenge.goal);
+          const you = r.userId === "me";
+          const finished = r.score >= challenge.goal;
+          return (
+            <li key={r.userId} aria-label={`${i + 1}. ${r.name}: ${r.score} of ${challenge.goal} sets`}>
+              <div aria-hidden className="relative h-9">
+                {/* lane */}
+                <span className="absolute inset-x-0 top-1/2 h-2 -translate-y-1/2 rounded-full bg-black/30" />
+                <span
+                  className={`absolute left-0 top-1/2 h-2 -translate-y-1/2 rounded-full transition-[width] duration-[1600ms] ease-[var(--ease-expo)] ${finished ? "bg-success" : you ? "bg-brand" : "bg-white/25"}`}
+                  style={{ width: go ? `calc((100% - 2.25rem) * ${pct} + 1.125rem)` : "1.125rem", transitionDelay: `${i * 90}ms` }}
+                />
+                {/* finish line */}
+                <span className="absolute right-0 top-0 h-full w-1 rounded-full bg-[repeating-linear-gradient(0deg,var(--color-text)_0_4px,transparent_4px_8px)] opacity-60" />
+                {/* runner */}
+                <span
+                  className="absolute top-0 grid size-9 place-items-center rounded-full transition-[left] duration-[1600ms] ease-[var(--ease-expo)]"
+                  style={{ left: go ? `calc((100% - 2.25rem) * ${pct})` : "0px", transitionDelay: `${i * 90}ms` }}
+                >
+                  <span
+                    className={`grid size-9 place-items-center rounded-full font-display text-sm font-semibold ring-2 ${
+                      you ? "bg-brand text-on-accent ring-accent shadow-glow" : finished ? "bg-success text-on-accent ring-success" : "bg-surface-raised text-text ring-white/15"
+                    }`}
+                  >
+                    {r.name.slice(0, 1)}
+                  </span>
+                </span>
+              </div>
+              <div className="mt-0.5 flex justify-between text-xs text-text">
+                <span className={you ? "font-semibold" : ""}>
+                  {i + 1}. {r.name}
+                </span>
+                <span className="tabular">
+                  {r.score}/{challenge.goal}
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }

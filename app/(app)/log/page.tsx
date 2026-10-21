@@ -118,6 +118,7 @@ export default function LogPage() {
     );
   }
 
+  const totalSets = draft.exercises.reduce((a, e) => a + e.sets.length, 0);
   const doneSets = draft.exercises.reduce(
     (a, e) => a + e.sets.filter((x) => x.done).length,
     0,
@@ -222,6 +223,20 @@ export default function LogPage() {
               kg volume
             </p>
           </div>
+        </div>
+        {/* Session progress: ticked sets out of everything planned. */}
+        <div
+          className="relative -mx-4 h-1 bg-white/5"
+          role="progressbar"
+          aria-label="Sets done"
+          aria-valuemin={0}
+          aria-valuemax={totalSets}
+          aria-valuenow={doneSets}
+        >
+          <div
+            className="bg-brand absolute inset-y-0 left-0 shadow-glow transition-[width] duration-700 ease-[var(--ease-expo)]"
+            style={{ width: `${totalSets ? (doneSets / totalSets) * 100 : 0}%` }}
+          />
         </div>
       </header>
 
@@ -486,17 +501,36 @@ function ExerciseCard({
   const rir = s.me?.rirEnabled ?? false;
   const isBarbell = exerciseMap(s).get(exerciseId)?.equipment === "barbell";
   const e = draft!.exercises[index];
+  const done = e.sets.filter((x) => x.done).length;
+  const complete = e.sets.length > 0 && done === e.sets.length;
   // Only sessions before this one: matters when editing an older workout.
   const previous = historyFor(s, "me", exerciseId, draft!.startedAt)[0];
   const target = suggestionFor(s, exerciseId, draft!.startedAt);
 
   return (
-    <section className="card rounded-lg" aria-label={name}>
+    <section
+      className={`card relative overflow-hidden rounded-lg transition-[border-color,box-shadow] duration-500 ${complete ? "!border-success/50 shadow-[0_18px_40px_-24px_rgb(75_227_160/0.6)]" : ""}`}
+      aria-label={name}
+    >
+      {/* per-exercise progress along the top edge */}
+      <div aria-hidden className="absolute inset-x-0 top-0 h-[3px] bg-white/5">
+        <div
+          className={`h-full transition-[width] duration-700 ease-[var(--ease-expo)] ${complete ? "bg-success" : "bg-brand"}`}
+          style={{ width: `${e.sets.length ? (done / e.sets.length) * 100 : 0}%` }}
+        />
+      </div>
       <div className="flex items-center gap-2 px-4 pt-3">
         <div className="flex-1">
           <h2 className="font-display text-lg font-semibold">{name}</h2>
           <p className="text-xs text-subtle">{muscle}</p>
         </div>
+        <span
+          key={done}
+          className={`num-hero rounded-full px-2.5 py-0.5 text-sm motion-safe:animate-bump ${complete ? "bg-success text-on-accent" : "bg-surface-raised text-muted"}`}
+          aria-label={`${done} of ${e.sets.length} sets done`}
+        >
+          {complete ? "Done" : `${done}/${e.sets.length}`}
+        </span>
         <button
           type="button"
           aria-label={`Options for ${name}`}

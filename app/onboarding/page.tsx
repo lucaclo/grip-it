@@ -1,6 +1,8 @@
 "use client";
 
-import { ArrowLeft, Flame, Gauge, Lock, Sparkles, TriangleAlert } from "lucide-react";
+import { ArrowLeft, Flame, Gauge, Lock, Sparkles, Target, TriangleAlert, Trophy } from "lucide-react";
+import { Plate3D } from "@/components/plate-3d";
+import { CountUp } from "@/components/ui/motion";
 import { ExperiencePicker, GoalPicker, HelpMeChoose } from "@/components/goal-picker";
 import { BarbellIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
@@ -26,6 +28,7 @@ export default function Onboarding() {
   const router = useRouter();
   const complete = useStore((s) => s.completeOnboarding);
   const [step, setStep] = useState(0);
+  const [intro, setIntro] = useState(true);
   const [tried, setTried] = useState(false);
 
   const [name, setName] = useState("");
@@ -94,6 +97,8 @@ export default function Onboarding() {
     }
   }
   const show = (e: string | null) => (tried ? e : null);
+
+  if (intro) return <Welcome onStart={() => setIntro(false)} />;
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-[480px] flex-col px-4 pt-safe pb-safe">
@@ -218,12 +223,14 @@ export default function Onboarding() {
           <div className="grid grid-cols-2 gap-3">
             <Card>
               <Flame aria-hidden className="size-5 text-accent" />
-              <p className="mt-2 tabular text-stat font-semibold">{under16 ? "—" : plan.kcal}</p>
+              <p className="mt-2 text-stat">{under16 ? <span className="num-hero">—</span> : <CountUp value={plan.kcal} duration={1200} className="num-hero" />}</p>
               <p className="text-sm text-muted">kcal per day</p>
             </Card>
             <Card>
               <BarbellIcon aria-hidden className="size-5 text-accent" />
-              <p className="mt-2 tabular text-stat font-semibold">{plan.proteinG} g</p>
+              <p className="mt-2 text-stat">
+                <CountUp value={plan.proteinG} suffix=" g" duration={1200} className="num-hero" />
+              </p>
               <p className="text-sm text-muted">protein per day</p>
             </Card>
           </div>
@@ -280,6 +287,55 @@ export default function Onboarding() {
         <Button size="lg" className="w-full" onClick={next}>
           {step < 2 ? "Continue" : "Start lifting"}
         </Button>
+      </div>
+    </main>
+  );
+}
+
+const WELCOME_WORDS = ["Lift.", "Log.", "Beat", "your", "mates."];
+const FEATURES = [
+  { Icon: BarbellIcon, title: "Log every set in seconds", body: "Targets prefilled, ticks that save as you go." },
+  { Icon: Target, title: "Coaching from real research", body: "Every target links to the study behind it." },
+  { Icon: Trophy, title: "Compete with your crew", body: "Leaderboards, weekly races and PR bragging rights." },
+];
+
+/** First screen a friend sees: the 3D plate, a headline that lands word by word, and what the app does. */
+function Welcome({ onStart }: { onStart: () => void }) {
+  return (
+    <main className="mx-auto flex min-h-dvh max-w-[480px] flex-col px-6 pt-safe pb-safe">
+      <div className="flex flex-1 flex-col justify-center gap-8 py-10">
+        <Plate3D size={150} className="mx-auto motion-safe:animate-enter" />
+        <h1 className="font-display text-[3.4rem] font-bold uppercase leading-[0.95]" aria-label="Lift. Log. Beat your mates.">
+          {WELCOME_WORDS.map((w, i) => (
+            <span key={i} aria-hidden className="mr-[0.22em] inline-block overflow-hidden pb-[0.06em] align-bottom">
+              <span
+                className={`inline-block motion-safe:animate-word ${i >= 2 ? "text-brand" : ""}`}
+                style={{ animationDelay: `${300 + i * 110}ms` }}
+              >
+                {w}
+              </span>
+            </span>
+          ))}
+        </h1>
+        <ul className="flex flex-col gap-4">
+          {FEATURES.map(({ Icon, title, body }, i) => (
+            <li key={title} className="flex gap-3 motion-safe:animate-enter" style={{ animationDelay: `${900 + i * 120}ms` }}>
+              <span className="grid size-11 shrink-0 place-items-center rounded-full border border-accent/30 bg-accent/12 text-accent">
+                <Icon aria-hidden className="size-5" />
+              </span>
+              <span>
+                <span className="block font-semibold">{title}</span>
+                <span className="block text-sm text-muted">{body}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="pb-4 motion-safe:animate-enter" style={{ animationDelay: "1300ms" }}>
+        <Button size="lg" className="w-full" onClick={onStart}>
+          Get started
+        </Button>
+        <p className="mt-3 text-center text-xs text-subtle">Takes about a minute. Your body stats stay private.</p>
       </div>
     </main>
   );
