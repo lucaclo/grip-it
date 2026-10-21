@@ -1,22 +1,23 @@
 "use client";
 
-import { Award, Download, Flame, Lock, Medal, RotateCcw, Trophy } from "lucide-react";
+import { Award, Download, Flame, Lock, Medal, RotateCcw, Sparkles, Trophy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, PageHeader, SectionTitle } from "@/components/ui/bits";
 import { CountUp } from "@/components/ui/motion";
-import { NumberField, Segmented, Toggle } from "@/components/ui/fields";
+import { NumberField, Toggle } from "@/components/ui/fields";
 import { Sheet } from "@/components/ui/sheet";
 import { allPRs, streakOf, workoutsOf } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
-import type { Goal } from "@/lib/science/targets";
+import { ExperiencePicker, experienceLabel, GoalPicker, goalTitle, HelpMeChoose } from "@/components/goal-picker";
 
 export default function Me() {
   const s = useStore();
   const router = useRouter();
   const me = s.me!;
   const [resetOpen, setResetOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const workouts = workoutsOf(s, "me");
   const prs = useMemo(() => allPRs(s).filter((p) => p.userId === "me"), [s]);
   const streak = streakOf(s, "me", me.sessionsPerWeek);
@@ -56,8 +57,7 @@ export default function Me() {
             <div className="flex-1">
               <p className="font-display text-2xl font-semibold leading-tight">{me.name}</p>
               <p className="text-sm text-text">
-                {me.goal === "hypertrophy" ? "Building muscle" : me.goal === "strength" ? "Getting stronger" : "Losing fat"} ·{" "}
-                {me.experience}
+                {goalTitle(me.goal)} · {experienceLabel(me.experience)}
               </p>
             </div>
           </div>
@@ -116,27 +116,26 @@ export default function Me() {
 
         <Card>
           <SectionTitle>Goal and training</SectionTitle>
-          <div className="flex flex-col gap-4">
-            <Segmented<Goal>
-              label="Goal"
-              value={me.goal}
-              onChange={(goal) => s.updateProfile({ goal })}
-              options={[
-                { value: "hypertrophy", label: "Muscle" },
-                { value: "strength", label: "Strength" },
-                { value: "fat_loss", label: "Fat loss" },
-              ]}
-            />
-            <Segmented
-              label="Experience"
-              value={me.experience}
-              onChange={(experience) => s.updateProfile({ experience })}
-              options={[
-                { value: "beginner", label: "Beginner" },
-                { value: "intermediate", label: "Intermediate" },
-                { value: "advanced", label: "Advanced" },
-              ]}
-            />
+          <div className="flex flex-col gap-5">
+            <button
+              type="button"
+              onClick={() => setHelpOpen(true)}
+              className="press flex items-center gap-3 rounded-md border border-volt/30 bg-volt/8 p-3 text-left"
+            >
+              <Sparkles aria-hidden className="size-5 shrink-0 text-volt" />
+              <span className="flex-1">
+                <span className="block font-semibold">Not sure? Help me choose</span>
+                <span className="block text-sm text-muted">6 quick questions, then we recommend a goal and level.</span>
+              </span>
+            </button>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-muted">Goal</p>
+              <GoalPicker value={me.goal} onChange={(goal) => s.updateProfile({ goal })} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-muted">Experience</p>
+              <ExperiencePicker value={me.experience} onChange={(experience) => s.updateProfile({ experience })} />
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <NumberField label="Target weight" unit="kg" decimal value={me.targetWeightKg} onChange={(v) => v && v >= 30 && s.updateProfile({ targetWeightKg: v })} />
               <NumberField
@@ -174,6 +173,12 @@ export default function Me() {
           </div>
         </Card>
       </div>
+
+      <HelpMeChoose
+        open={helpOpen}
+        onClose={() => setHelpOpen(false)}
+        onApply={(r) => s.updateProfile({ goal: r.goal, experience: r.experience, sessionsPerWeek: r.sessionsPerWeek })}
+      />
 
       <Sheet open={resetOpen} onClose={() => setResetOpen(false)} title="Reset everything?">
         <div className="flex flex-col gap-3">

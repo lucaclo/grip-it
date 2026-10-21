@@ -19,7 +19,10 @@ export type Suggestion = {
 export const REP_RANGE: Record<Goal, [number, number]> = {
   hypertrophy: [6, 12],
   strength: [3, 6],
+  powerbuilding: [4, 10],
+  recomp: [6, 12],
   fat_loss: [6, 12],
+  fitness: [8, 15],
 };
 
 const roundTo = (kg: number, step: number) => Math.round(kg / step) * step;

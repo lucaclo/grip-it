@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowLeft, Flame, Gauge, Lock, TriangleAlert } from "lucide-react";
+import { ArrowLeft, Flame, Gauge, Lock, Sparkles, TriangleAlert } from "lucide-react";
+import { ExperiencePicker, GoalPicker, HelpMeChoose } from "@/components/goal-picker";
 import { BarbellIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -13,16 +14,6 @@ import type { Profile } from "@/lib/data/types";
 import type { ActivityLevel, Sex } from "@/lib/science/energy";
 import type { Experience, Goal } from "@/lib/science/targets";
 
-const GOALS: { value: Goal; title: string; body: string }[] = [
-  { value: "hypertrophy", title: "Build muscle", body: "Hypertrophy: grow size with 6–12 rep sets and a small surplus." },
-  { value: "strength", title: "Get stronger", body: "Strength: heavier 3–6 rep sets, eating around maintenance." },
-  { value: "fat_loss", title: "Lose fat", body: "Keep your muscle while dieting, with high protein." },
-];
-const EXPERIENCE: { value: Experience; label: string; body: string }[] = [
-  { value: "beginner", label: "Beginner", body: "Under 1 year of consistent lifting. Fastest gains." },
-  { value: "intermediate", label: "Intermediate", body: "1–3 years. Progress is steady but slower." },
-  { value: "advanced", label: "Advanced", body: "3+ years. Gains are slow, so timelines are longer." },
-];
 const ACTIVITY: { value: ActivityLevel; label: string }[] = [
   { value: "sedentary", label: "Desk job, little walking" },
   { value: "light", label: "Lightly active" },
@@ -52,6 +43,7 @@ export default function Onboarding() {
   const [sessionsPerWeek, setSessions] = useState(3);
   const [rirEnabled, setRir] = useState(false);
   const [sample, setSample] = useState(true);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const age = birthYear ? new Date().getFullYear() - birthYear : null;
   const errors = {
@@ -164,21 +156,18 @@ export default function Onboarding() {
             <h1 className="text-brand font-display text-display font-bold uppercase leading-none">Your goal</h1>
             <p className="mt-2 text-muted">You can switch any time in settings.</p>
           </div>
-          <div role="radiogroup" aria-label="Goal" className="flex flex-col gap-2">
-            {GOALS.map((g) => (
-              <button
-                key={g.value}
-                type="button"
-                role="radio"
-                aria-checked={goal === g.value}
-                onClick={() => setGoal(g.value)}
-                className={`rounded-md border p-3 text-left transition-colors ${goal === g.value ? "border-accent/70 bg-surface-raised shadow-glow" : "border-border bg-surface/80"}`}
-              >
-                <span className={`block font-display text-lg font-semibold ${goal === g.value ? "text-accent" : ""}`}>{g.title}</span>
-                <span className="block text-sm text-muted">{g.body}</span>
-              </button>
-            ))}
-          </div>
+          <button
+            type="button"
+            onClick={() => setHelpOpen(true)}
+            className="press flex items-center gap-3 rounded-md border border-volt/30 bg-volt/8 p-3 text-left"
+          >
+            <Sparkles aria-hidden className="size-5 shrink-0 text-volt" />
+            <span className="flex-1">
+              <span className="block font-semibold">Not sure? Help me choose</span>
+              <span className="block text-sm text-muted">6 quick questions, then we suggest a goal, level and weekly sessions.</span>
+            </span>
+          </button>
+          <GoalPicker value={goal} onChange={setGoal} />
           <div className="grid grid-cols-2 gap-3">
             <NumberField label="Target weight" unit="kg" decimal value={targetWeightKg} onChange={setTargetWeight} error={show(errors.target)} />
             <div className="flex flex-col gap-1.5">
@@ -195,13 +184,10 @@ export default function Onboarding() {
               />
             </div>
           </div>
-          <Segmented
-            label="Experience"
-            value={experience}
-            onChange={setExperience}
-            options={EXPERIENCE.map((e) => ({ value: e.value, label: e.label }))}
-          />
-          <p className="-mt-3 text-sm text-subtle">{EXPERIENCE.find((e) => e.value === experience)?.body}</p>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-medium text-muted">Experience</p>
+            <ExperiencePicker value={experience} onChange={setExperience} />
+          </div>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="activity" className="text-sm font-medium text-muted">
               Activity outside the gym
@@ -279,6 +265,16 @@ export default function Onboarding() {
           </Card>
         </section>
       )}
+
+      <HelpMeChoose
+        open={helpOpen}
+        onClose={() => setHelpOpen(false)}
+        onApply={(r) => {
+          setGoal(r.goal);
+          setExperience(r.experience);
+          setSessions(r.sessionsPerWeek);
+        }}
+      />
 
       <div className="sticky bottom-0 bg-bg pt-3 pb-4">
         <Button size="lg" className="w-full" onClick={next}>

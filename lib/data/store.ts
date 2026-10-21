@@ -337,7 +337,7 @@ export const useStore = create<State & Actions>()(
 
 /** Default rest between sets: longer for heavy strength work. */
 export function restFor(goal: string | undefined) {
-  return goal === "strength" ? 180 : 120;
+  return goal === "strength" ? 180 : goal === "powerbuilding" ? 150 : 120;
 }
 
 function mutateDraft(

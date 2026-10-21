@@ -11,7 +11,7 @@ import { PlateBar } from "@/components/plate-bar";
 import { Sheet } from "@/components/ui/sheet";
 import { allPRs, exerciseMap, streakOf, suggestionFor, userName, volumeKg, workoutsOf } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
-import type { Suggestion } from "@/lib/science/progression";
+import { REP_RANGE, type Suggestion } from "@/lib/science/progression";
 
 export default function WorkoutSummary() {
   const { id } = useParams<{ id: string }>();
@@ -195,7 +195,7 @@ export default function WorkoutSummary() {
             <p className="font-display text-xl font-semibold text-accent">{why.sug.label}</p>
             <p>{why.sug.reason}</p>
             <p className="text-sm text-subtle">
-              Rule: double progression in your goal&apos;s rep range ({s.me?.goal === "strength" ? "3–6" : "6–12"} reps). Hit the top on every set, then add weight. Three sessions stuck means a short deload.
+              Rule: double progression in your goal&apos;s rep range ({REP_RANGE[s.me?.goal ?? "hypertrophy"].join("–")} reps). Hit the top on every set, then add weight. Three sessions stuck means a short deload.
             </p>
             <Citations keys={why.sug.citationKeys} />
           </div>

@@ -1,15 +1,31 @@
 import { cite } from "./citations";
 import { energy, type EnergyInput } from "./energy";
 
-export type Goal = "hypertrophy" | "strength" | "fat_loss";
-export type Experience = "beginner" | "intermediate" | "advanced";
+export type Goal = "hypertrophy" | "strength" | "powerbuilding" | "recomp" | "fat_loss" | "fitness";
+export type Experience = "novice" | "beginner" | "intermediate" | "advanced" | "elite";
 export type Difficulty = "easy" | "moderate" | "hard";
 
 const KCAL_PER_KG = 7700;
 
 /** Recommended weekly change as a fraction of body weight. Gains slow down with experience. */
-const GAIN_RATE: Record<Experience, number> = { beginner: 0.005, intermediate: 0.0035, advanced: 0.0025 };
-const LOSS_RATE: Record<Experience, number> = { beginner: 0.0075, intermediate: 0.0065, advanced: 0.005 };
+// Novice/beginner use the top of the published 0.25–0.5%/week gain range; "elite" (near their ceiling) sits
+// below it, which is a coaching extrapolation rather than a study finding.
+const GAIN_RATE: Record<Experience, number> = {
+  novice: 0.005,
+  beginner: 0.005,
+  intermediate: 0.0035,
+  advanced: 0.0025,
+  elite: 0.0015,
+};
+const LOSS_RATE: Record<Experience, number> = {
+  novice: 0.0075,
+  beginner: 0.0075,
+  intermediate: 0.0065,
+  advanced: 0.005,
+  elite: 0.005,
+};
+/** Goals that never plan a surplus, and how hard they push a deficit relative to a full fat-loss phase. */
+const LOSS_SCALE: Partial<Record<Goal, number>> = { hypertrophy: 0.6, powerbuilding: 0.6, recomp: 0.4, fitness: 0.6 };
 const MAX_GAIN_RATE = 0.005;
 const MAX_LOSS_RATE = 0.01;
 
@@ -54,7 +70,7 @@ export function protein(
   goal: Goal,
   bodyFatPct?: number | null,
 ): { grams: number; basis: string; citationKeys: string[] } {
-  if (goal === "fat_loss" && bodyFatPct) {
+  if ((goal === "fat_loss" || goal === "recomp") && bodyFatPct) {
     const lean = weightKg * (1 - bodyFatPct / 100);
     return {
       grams: Math.round(lean * 2.6),
@@ -62,7 +78,7 @@ export function protein(
       citationKeys: cite("helms2014prep"),
     };
   }
-  if (goal === "fat_loss") {
+  if (goal === "fat_loss" || goal === "recomp") {
     return {
       grams: Math.round(weightKg * 2.2),
       basis: "2.2 g per kg of body weight (dieting)",
@@ -87,24 +103,29 @@ export function targets(input: TargetsInput): TargetsResult {
   let direction: TargetsResult["direction"] =
     Math.abs(diff) < 0.5 ? "maintain" : diff > 0 ? "gain" : "lose";
 
-  if (input.goal === "fat_loss" && direction === "gain") {
+  if ((input.goal === "fat_loss" || input.goal === "recomp") && direction === "gain") {
     notes.push("Your target weight is above your current weight, so we've set maintenance instead of a deficit.");
     direction = "maintain";
   }
-  if (input.goal === "hypertrophy" && direction === "lose") {
+  if ((input.goal === "hypertrophy" || input.goal === "powerbuilding") && direction === "lose") {
     notes.push("Losing weight while building muscle is slow. We've planned a gentle deficit and high protein.");
+  }
+  if (input.goal === "recomp") {
+    notes.push("Recomp: a small deficit with high protein, so you lose fat slowly while still building muscle.");
   }
 
   const recommendedRate =
     direction === "gain"
       ? GAIN_RATE[input.experience]
       : direction === "lose"
-        ? LOSS_RATE[input.experience] * (input.goal === "hypertrophy" ? 0.6 : 1)
+        ? LOSS_RATE[input.experience] * (LOSS_SCALE[input.goal] ?? 1)
         : 0;
   if (direction === "gain") keys.add("iraki2019offseason");
   if (direction === "lose") keys.add("helms2014prep");
 
-  let weeklyRateKg = recommendedRate * input.weightKg * (direction === "lose" ? -1 : 1);
+  // "Stay fit" gains only gently: general fitness doesn't need a full bulk.
+  const fitnessScale = input.goal === "fitness" && direction === "gain" ? 0.5 : 1;
+  let weeklyRateKg = recommendedRate * fitnessScale * input.weightKg * (direction === "lose" ? -1 : 1);
   let weeks = direction === "maintain" ? null : Math.abs(diff) / Math.abs(weeklyRateKg);
   let projectedDate = weeks == null ? null : addDays(today, weeks * 7);
   let unrealistic = false;
@@ -128,8 +149,10 @@ export function targets(input: TargetsInput): TargetsResult {
     }
   }
   if (unrealistic) difficulty = "hard";
-  if (!input.targetDate && input.experience === "advanced" && direction === "gain") difficulty = "hard";
-  if (!input.targetDate && input.experience === "beginner") difficulty = direction === "maintain" ? "easy" : "moderate";
+  const seasoned = input.experience === "advanced" || input.experience === "elite";
+  if (!input.targetDate && seasoned && direction === "gain") difficulty = "hard";
+  if (!input.targetDate && (input.experience === "novice" || input.experience === "beginner"))
+    difficulty = direction === "maintain" ? "easy" : "moderate";
 
   let kcal = Math.round(e.tdee + (weeklyRateKg * KCAL_PER_KG) / 7);
   let floored = false;
