@@ -109,7 +109,7 @@ export default function Body() {
               <p className="mt-1 text-xs text-subtle">Dots: daily weigh-ins. Line: 7-day average. Dashed: your target.</p>
             </>
           ) : (
-            <p className="mt-3 text-sm text-muted">Weigh in on a couple of days to see your trend. Daily weight jumps around; the average is what matters.</p>
+            <p className="mt-3 text-sm text-muted">Weigh in on two different days to see your trend. Daily weight swings by a kilo or more; the 7-day average is what counts.</p>
           )}
         </Card>
 

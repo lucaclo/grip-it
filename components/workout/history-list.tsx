@@ -16,7 +16,7 @@ export function HistoryList() {
     return m;
   }, [s]);
 
-  if (!workouts.length) return <p className="py-6 text-center text-sm text-muted">Your saved workouts will show up here.</p>;
+  if (!workouts.length) return <p className="py-6 text-center text-sm text-muted">No workouts yet. Your first one sets the numbers to beat.</p>;
 
   const groups = new Map<string, typeof workouts>();
   for (const w of workouts) {

@@ -99,15 +99,15 @@ export default function LogPage() {
         <div className="card-hero mb-6 flex flex-col items-center gap-3 rounded-xl px-5 py-6 text-center">
           <Plate3D size={132} className="my-3" />
           <p className="max-w-xs text-sm text-text">
-            Your session saves on your phone after every set, so nothing is lost
-            if you close the app.
+            Every set saves as you go. Close the app mid-session and pick up
+            right where you left off.
           </p>
           <Button size="lg" className="w-full" onClick={startWorkout}>
             Start workout
           </Button>
           <p className="text-xs text-text">
-            Logging one you&apos;ve already done? Start it, then turn on
-            Auto-tick.
+            Already trained? Start one, turn on Auto-tick and log it after the
+            fact.
           </p>
         </div>
         <h2 className="mb-3 font-display text-lg font-semibold uppercase tracking-wide">

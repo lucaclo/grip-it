@@ -183,7 +183,7 @@ export function ExerciseSearch({
           {results.length === 0 && (
             <div className="flex flex-col items-center gap-3 py-8 text-center">
               <p className="text-muted">
-                No exercise matches &ldquo;{q}&rdquo;.
+                Nothing called &ldquo;{q}&rdquo; yet. Add it and it&apos;s yours.
               </p>
               <Button onClick={() => setCreating(true)}>
                 <Plus aria-hidden className="size-5" /> Create &ldquo;

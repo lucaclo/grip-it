@@ -37,7 +37,7 @@ export default function ExerciseHistory() {
     <>
       <PageHeader title={def.name} subtitle={`${MUSCLE_LABEL[def.primary]} · ${def.equipment}`} />
       {sessions.length < 2 ? (
-        <EmptyState icon={<ChartIcon className="size-10" />} title="Not enough data yet" body="Log this exercise twice to see your estimated 1-rep max trend." />
+        <EmptyState icon={<ChartIcon className="size-10" />} title="One more session" body="Log this exercise twice and you'll see your estimated 1-rep max climb." />
       ) : (
         <Card className="mb-4">
           <SectionTitle

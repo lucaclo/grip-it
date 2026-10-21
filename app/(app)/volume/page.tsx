@@ -85,7 +85,7 @@ export default function Volume() {
                 ))}
               </ul>
             ) : (
-              <p className="mt-3 text-sm text-muted">Nothing hit this muscle yet this week.</p>
+              <p className="mt-3 text-sm text-muted">0 sets this week. Add an exercise for it next session.</p>
             )}
           </Card>
         )}

@@ -79,8 +79,8 @@ export default function Feed() {
         <PageHeader title="Feed" />
         <EmptyState
           icon={<Trophy className="size-10" />}
-          title="Quiet in here"
-          body="Workouts and PRs from your group show up here."
+          title="Nothing to react to yet"
+          body="When your crew trains, their sessions and PRs land here. Invite someone to get it going."
         />
       </>
     );
