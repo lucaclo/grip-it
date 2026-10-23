@@ -3,9 +3,9 @@ import type { Goal } from "./targets";
 
 export type LoggedSet = { kg: number; reps: number; rir?: number | null; type?: SetType };
 export type SetType = "normal" | "warmup" | "drop" | "failure";
-export type Session = { sets: LoggedSet[] };
+export type Session = { sets: LoggedSet[]; grip?: string };
 
-export type Action = "add_weight" | "add_rep" | "hold" | "deload" | "first_time";
+export type Action = "add_weight" | "add_rep" | "hold" | "deload" | "first_time" | "new_grip";
 
 export type Suggestion = {
   action: Action;
@@ -130,6 +130,35 @@ export function nextSession(history: Session[], goal: Goal, isLower: boolean): S
     label: "+1 rep",
     reason: `Stay at ${kg} kg and beat your lowest set: aim for ${lowest + 1} reps on every set. When all sets reach ${maxReps}, add weight.`,
     citationKeys: base,
+  };
+}
+
+/**
+ * First session on a different grip: the last session's top weight scaled by how much the new grip
+ * typically lifts (`ratio`, new ÷ old), at the same reps clamped to the goal's range. Rounded down
+ * to the nearest 2.5 kg so the first attempt errs light.
+ */
+export function newGripSession(
+  last: Session,
+  ratio: number,
+  goal: Goal,
+  names: { from: string; to: string },
+  gripCitations: string[],
+): Suggestion {
+  const [minReps, maxReps] = REP_RANGE[goal];
+  const kg = topKg(last);
+  const reps = Math.min(maxReps, Math.max(minReps, Math.min(...repsAtTop(last))));
+  const target = Math.max(0, Math.floor((kg * ratio) / 2.5) * 2.5);
+  const pct = Math.round((ratio - 1) * 100);
+  const change =
+    Math.abs(pct) < 2 ? "most people lift about the same with it" : `it typically moves about ${Math.abs(pct)}% ${pct < 0 ? "less" : "more"} weight`;
+  return {
+    action: "new_grip",
+    targetKg: target,
+    targetReps: reps,
+    label: "New grip",
+    reason: `First time with a ${names.to.toLowerCase()} grip. Your last ${names.from.toLowerCase()}-grip session topped out at ${kg} kg, and ${change}, so this is a cautious first target. From next time, targets come from this grip's own sets.`,
+    citationKeys: [...cite("doubleprogression"), ...gripCitations],
   };
 }
 

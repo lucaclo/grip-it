@@ -1,0 +1,5 @@
+# Never uploaded on deploy
+replica/screens/
+scratchpads/
+.env*
+feedback-inbox/

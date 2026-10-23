@@ -13,6 +13,8 @@ coverage/
 playwright-report/
 test-results/
 # misc
+# app feedback pulled from the private Blob store (personal data): never commit
+feedback-inbox/
 .DS_Store
 *.log
 .vercel

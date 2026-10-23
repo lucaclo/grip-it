@@ -8,7 +8,9 @@ import { BarbellIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, Citations } from "@/components/ui/bits";
+import { Card } from "@/components/ui/bits";
+import { InfoButton } from "@/components/ui/info";
+import { RirToggle } from "@/components/rir-toggle";
 import { NumberField, Segmented, TextField, Toggle } from "@/components/ui/fields";
 import { targetsFor } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
@@ -45,7 +47,7 @@ export default function Onboarding() {
   const [targetDate, setTargetDate] = useState("");
   const [sessionsPerWeek, setSessions] = useState(3);
   const [rirEnabled, setRir] = useState(false);
-  const [sample, setSample] = useState(true);
+  const [sample, setSample] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
 
   const age = birthYear ? new Date().getFullYear() - birthYear : null;
@@ -218,7 +220,20 @@ export default function Onboarding() {
         <section className="flex flex-1 flex-col gap-4 pt-6">
           <div>
             <h1 className="text-brand font-display text-display font-bold uppercase leading-none">Your plan</h1>
-            <p className="mt-2 text-muted">Based on published research. Tap a source to read it.</p>
+            <p className="mt-2 flex items-center gap-1 text-muted">
+              Based on published research.
+              <InfoButton title="Where your plan comes from" label="Where your plan comes from" keys={plan.citationKeys}>
+                <p>
+                  <strong>Calories:</strong> your maintenance is about {plan.tdee} kcal a day, estimated with{" "}
+                  {plan.method === "katch_mcardle" ? "the Katch-McArdle equation from your lean mass" : "the Mifflin-St Jeor equation from your weight, height, age and sex"}, then
+                  scaled for how active you are. Your target adds or removes enough to move at the weekly rate shown.
+                </p>
+                <p>
+                  <strong>Protein:</strong> {plan.proteinBasis}.
+                </p>
+                <p className="text-muted">These are starting points. Check them against your weight trend on the Body screen every couple of weeks.</p>
+              </InfoButton>
+            </p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Card>
@@ -255,9 +270,6 @@ export default function Onboarding() {
                 ({plan.weeks} weeks).
               </p>
             )}
-            <p className="mt-2 text-sm text-subtle">
-              Maintenance ≈ {plan.tdee} kcal ({plan.method === "katch_mcardle" ? "Katch-McArdle, from your body fat" : "Mifflin-St Jeor"}). Protein: {plan.proteinBasis}.
-            </p>
             {plan.notes.map((n) => (
               <p key={n} className={`mt-2 flex gap-2 text-sm ${plan.unrealistic ? "text-warning" : "text-muted"}`}>
                 <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
@@ -265,10 +277,9 @@ export default function Onboarding() {
               </p>
             ))}
           </Card>
-          <Citations keys={plan.citationKeys} />
           <Card>
-            <Toggle label="Log RIR (reps in reserve)" description="Optional. How many more reps you could have done. Makes your next-session targets smarter." checked={rirEnabled} onChange={setRir} />
-            <Toggle label="Fill my history with 4 weeks of sample workouts" description="Handy for trying the app. You can reset everything in Me → Settings." checked={sample} onChange={setSample} />
+            <RirToggle checked={rirEnabled} onChange={setRir} />
+            <Toggle label="Try it with demo friends and sample workouts" description="Adds made-up friends and 4 weeks of practice history. Leave off for your real profile." checked={sample} onChange={setSample} />
           </Card>
         </section>
       )}

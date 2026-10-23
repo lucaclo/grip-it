@@ -5,12 +5,16 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { Card, Citations, EmptyState, PageHeader, SectionTitle } from "@/components/ui/bits";
+import { MuscleHeat } from "@/components/anatomy/muscle-heat";
+import { HardSetsInfo } from "@/components/explainers";
+import { Card, EmptyState, PageHeader, SectionTitle } from "@/components/ui/bits";
+import { Research } from "@/components/ui/info";
 import { Confetti, CountUp } from "@/components/ui/motion";
 import { PlateBar } from "@/components/plate-bar";
 import { Sheet } from "@/components/ui/sheet";
-import { allPRs, exerciseMap, streakOf, suggestionFor, userName, volumeKg, workoutsOf } from "@/lib/data/selectors";
+import { allPRs, exerciseMap, hardSetsIn, liftedKg, muscleWork, streakOf, suggestionFor, userName, workoutsOf } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
+import { gripTag } from "@/lib/science/grips";
 import { REP_RANGE, type Suggestion } from "@/lib/science/progression";
 
 export default function WorkoutSummary() {
@@ -19,6 +23,7 @@ export default function WorkoutSummary() {
   const w = s.workouts.find((x) => x.id === id);
   const ex = useMemo(() => exerciseMap(s), [s]);
   const prs = useMemo(() => allPRs(s).filter((p) => p.workoutId === id), [s, id]);
+  const work = useMemo(() => (w ? muscleWork(s, [w]) : null), [s, w]);
   const [why, setWhy] = useState<{ name: string; sug: Suggestion } | null>(null);
   const router = useRouter();
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -36,13 +41,15 @@ export default function WorkoutSummary() {
 
   const mine = w.userId === "me";
   const number = workoutsOf(s, w.userId).length - workoutsOf(s, w.userId).findIndex((x) => x.id === w.id);
-  const sets = w.exercises.reduce((a, e) => a + e.sets.length, 0);
+  const hard = hardSetsIn(s, w);
+  const exercises = w.exercises.length;
   const mins = Math.round((Date.parse(w.endedAt) - Date.parse(w.startedAt)) / 60000);
   const streak = mine && s.me ? streakOf(s, "me", s.me.sessionsPerWeek) : 0;
 
   return (
     <>
       <PageHeader
+        back={mine ? "/log" : "/feed"}
         title={w.title}
         subtitle={`${mine ? "Your" : `${userName(s, w.userId)}'s`} workout #${number} · ${new Date(w.startedAt).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}`}
       />
@@ -60,7 +67,10 @@ export default function WorkoutSummary() {
             {prs.map((p) => (
               <li key={p.id} className="flex flex-col gap-2">
                 <span className="flex justify-between gap-2 text-base">
-                  <span>{ex.get(p.exerciseId)?.name}</span>
+                  <span>
+                    {ex.get(p.exerciseId)?.name}
+                    {p.grip && <span className="opacity-80"> · {gripTag(p.exerciseId, p.grip)}</span>}
+                  </span>
                   <span className="num-hero text-lg">
                     {p.kg} × {p.reps} · e1RM {p.e1rm} kg
                   </span>
@@ -80,8 +90,8 @@ export default function WorkoutSummary() {
         {(
           [
             ["Time", mins, " min"],
-            ["Sets", sets, ""],
-            ["Volume", Math.round(volumeKg(w)), " kg"],
+            ["Hard sets", hard, ""],
+            ["Volume", liftedKg(s, w), " kg"],
           ] as const
         ).map(([k, v, unit]) => (
           <div key={k} className="flex flex-col-reverse px-2">
@@ -92,6 +102,20 @@ export default function WorkoutSummary() {
           </div>
         ))}
       </dl>
+
+      <p className="-mt-2 mb-4 flex items-center justify-center gap-1 text-sm text-muted">
+        <span>
+          <span className="tabular text-text">{hard}</span> hard set{hard === 1 ? "" : "s"} across{" "}
+          <span className="tabular text-text">{exercises}</span> exercise{exercises === 1 ? "" : "s"}
+        </span>
+        <HardSetsInfo className="ml-1" />
+      </p>
+
+      {work && (
+        <div className="mb-4">
+          <MuscleHeat work={work} scale="session" />
+        </div>
+      )}
 
       {mine && streak > 0 && (
         <p className="mb-4 flex items-center gap-2 rounded-md bg-surface p-3">
@@ -107,9 +131,10 @@ export default function WorkoutSummary() {
           <SectionTitle>Next time, beat this</SectionTitle>
           <ul className="mb-4 flex flex-col gap-2">
             {w.exercises.map((e) => {
-              const name = ex.get(e.exerciseId)?.name ?? "Exercise";
-              // Suggestion as of just after this workout.
-              const sug = suggestionFor(s, e.exerciseId, new Date(Date.parse(w.startedAt) + 1).toISOString());
+              const tag = gripTag(e.exerciseId, e.grip);
+              const name = `${ex.get(e.exerciseId)?.name ?? "Exercise"}${tag ? ` · ${tag}` : ""}`;
+              // Suggestion as of just after this workout, on the same grip.
+              const sug = suggestionFor(s, e.exerciseId, new Date(Date.parse(w.startedAt) + 1).toISOString(), e.grip);
               return (
                 <li key={e.exerciseId}>
                   <button type="button" onClick={() => setWhy({ name, sug })} className="flex min-h-16 w-full items-center gap-3 card rounded-md px-3 text-left">
@@ -138,7 +163,10 @@ export default function WorkoutSummary() {
         {w.exercises.map((e) => (
           <Link key={e.exerciseId} href={`/exercises/${e.exerciseId}`} transitionTypes={["drill-in"]} className="press flex min-h-14 items-center gap-3 px-4 py-2">
             <span className="flex-1">
-              <span className="block">{ex.get(e.exerciseId)?.name}</span>
+              <span className="block">
+                {ex.get(e.exerciseId)?.name}
+                {gripTag(e.exerciseId, e.grip) && <span className="text-muted"> · {gripTag(e.exerciseId, e.grip)}</span>}
+              </span>
               <span className="tabular block text-sm text-subtle">{e.sets.map((x) => `${x.kg}×${x.reps}`).join("  ")}</span>
             </span>
             {prs.some((p) => p.exerciseId === e.exerciseId) && <Medal aria-label="PR" className="size-5 text-pr" />}
@@ -201,7 +229,7 @@ export default function WorkoutSummary() {
             <p className="text-sm text-subtle">
               Rule: double progression in your goal&apos;s rep range ({REP_RANGE[s.me?.goal ?? "hypertrophy"].join("–")} reps). Hit the top on every set, then add weight. Three sessions stuck means a short deload.
             </p>
-            <Citations keys={why.sug.citationKeys} />
+            <Research keys={why.sug.citationKeys} />
           </div>
         )}
       </Sheet>

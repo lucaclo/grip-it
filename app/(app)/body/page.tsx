@@ -4,7 +4,8 @@ import { Lock } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Area, CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
 import { Button } from "@/components/ui/button";
-import { Card, Citations, PageHeader, ProgressRing, SectionTitle } from "@/components/ui/bits";
+import { Card, PageHeader, ProgressRing, SectionTitle } from "@/components/ui/bits";
+import { InfoButton } from "@/components/ui/info";
 import { NumberField } from "@/components/ui/fields";
 import { CountUp } from "@/components/ui/motion";
 import { latestWeight, myTargets } from "@/lib/data/selectors";
@@ -41,7 +42,7 @@ export default function Body() {
 
   return (
     <>
-      <PageHeader title="Body" subtitle="Private to you unless you share it in settings." />
+      <PageHeader back="/home" title="Body" subtitle="Private to you unless you share it in settings." />
       <div className="stagger flex flex-col gap-4">
         <Card>
           <SectionTitle>Weight</SectionTitle>
@@ -136,17 +137,22 @@ export default function Body() {
             Save totals
           </Button>
           {t && (
-            <div className="mt-4 flex flex-col gap-2">
-              <p className="text-sm text-subtle">
-                Targets: {t.kcal} kcal and {t.proteinG} g protein ({t.proteinBasis}).
-              </p>
-              <Citations keys={t.citationKeys} />
-            </div>
+            <p className="mt-3 flex items-center gap-1 text-sm text-subtle">
+              Targets: {t.kcal} kcal and {t.proteinG} g protein.
+              <InfoButton title="Your daily targets" label="Where your targets come from" keys={t.citationKeys}>
+                <p>
+                  <strong>Calories:</strong> about {t.kcal} kcal a day, from your estimated maintenance adjusted for your goal.
+                </p>
+                <p>
+                  <strong>Protein:</strong> {t.proteinG} g a day ({t.proteinBasis}).
+                </p>
+              </InfoButton>
+            </p>
           )}
         </Card>
 
         <p className="flex items-center gap-2 text-sm text-subtle">
-          <Lock aria-hidden className="size-4" /> Friends can&apos;t see this page. DOTS uses your weight without showing it.
+          <Lock aria-hidden className="size-4" /> Friends can&apos;t see this page. Your powerlifting score uses your weight without showing it.
         </p>
       </div>
       <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+5.75rem)] z-30 flex justify-center">

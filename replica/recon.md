@@ -251,3 +251,20 @@ Other: magic links opened in a different browser on iOS, and the iOS "Add to Hom
 No payments, no realtime needed (polling or refresh on open is fine at <30 users).
 
 Size: **M** (a few weeks). The MVP slice (F01 + F02 + F05 with one metric) is roughly S.
+
+## Prototype parity (2026-10-21)
+
+The local prototype (browser storage, demo friends) compared against this map. `features.csv` now marks
+40 of 63 rows `proto`. Server rows (auth, invite, RLS, sync) stay `no` until the Supabase issues land.
+
+- **Screens built locally:** S04–S18, S20, S21, S24 (S13's Why sheet lives on the summary, S12).
+- **Screens missing:** S01–S03 (sign-in, install guide: #14, #15, #18), S19 join and time-limited
+  challenges (#100), S22 invite (#20), S23 plan (#68, #85).
+- **Flow edges checked:**
+  - F02 duplicate exercise: no guard (#97). F02 offline: no service worker yet (#7).
+  - F03 stall → variation: missing (#99).
+  - F04 under-age: blocked under 16.
+  - F08 outlier and two entries in a day: no guard (#98).
+- **S11 note field:** missing (#96).
+- **Dev on phone:** `allowedDevOrigins` lacked the 172.* range, so the iPhone hotspot got 403 on every chunk.
+  Fixed in `next.config.ts`; the helper is #105.

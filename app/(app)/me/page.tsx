@@ -1,12 +1,16 @@
 "use client";
 
-import { Award, Download, Flame, Lock, Medal, RotateCcw, Sparkles, Trophy } from "lucide-react";
+import { Award, ChevronRight, Download, Flame, Lock, Medal, MessageSquarePlus, RotateCcw, Sparkles, Trophy } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, PageHeader, SectionTitle } from "@/components/ui/bits";
 import { CountUp } from "@/components/ui/motion";
 import { NumberField, Toggle } from "@/components/ui/fields";
+import { RirToggle } from "@/components/rir-toggle";
+import { AppVersion } from "@/components/app-version";
+import { FriendsCard } from "@/components/friends/friends-card";
 import { Sheet } from "@/components/ui/sheet";
 import { allPRs, streakOf, workoutsOf } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
@@ -33,9 +37,9 @@ export default function Me() {
   const earnedCount = badges.filter((b) => b.earned).length;
 
   function exportData() {
-    const { me: profile, workouts: all, weights, nutrition, customExercises } = useStore.getState();
+    const { me: profile, workouts: all, weights, nutrition, customExercises, comments } = useStore.getState();
     const blob = new Blob(
-      [JSON.stringify({ exportedAt: new Date().toISOString(), profile, workouts: all.filter((w) => w.userId === "me"), weights, nutrition, customExercises }, null, 2)],
+      [JSON.stringify({ exportedAt: new Date().toISOString(), profile, workouts: all.filter((w) => w.userId === "me"), weights, nutrition, customExercises, comments: comments.filter((c) => c.userId === "me") }, null, 2)],
       { type: "application/json" },
     );
     const a = document.createElement("a");
@@ -147,7 +151,7 @@ export default function Me() {
                 onChange={(v) => v && s.updateProfile({ sessionsPerWeek: Math.min(7, Math.max(1, Math.round(v))) })}
               />
             </div>
-            <Toggle label="Log RIR (reps in reserve)" description="Adds an optional column to each set for smarter targets." checked={me.rirEnabled} onChange={(rirEnabled) => s.updateProfile({ rirEnabled })} />
+            <RirToggle checked={me.rirEnabled} onChange={(rirEnabled) => s.updateProfile({ rirEnabled })} />
           </div>
         </Card>
 
@@ -159,6 +163,23 @@ export default function Me() {
           <Toggle label="Share body weight" description="Group-mates can see your weight trend." checked={me.shareWeight} onChange={(shareWeight) => s.updateProfile({ shareWeight })} />
           <Toggle label="Share nutrition" description="Group-mates can see your daily calories and protein." checked={me.shareNutrition} onChange={(shareNutrition) => s.updateProfile({ shareNutrition })} />
         </Card>
+
+        <FriendsCard manage />
+
+        <Link
+          href="/feedback?from=/me"
+          transitionTypes={["drill-in"]}
+          className="press card flex min-h-16 items-center gap-3 rounded-lg px-4 py-3"
+        >
+          <MessageSquarePlus aria-hidden className="size-6 text-accent" />
+          <span className="flex-1">
+            <span className="block text-base">Send feedback</span>
+            <span className="block text-sm text-subtle">Report a bug or suggest an idea, with screenshots</span>
+          </span>
+          <ChevronRight aria-hidden className="size-5 text-subtle" />
+        </Link>
+
+        <AppVersion />
 
         <Card>
           <SectionTitle>Your data</SectionTitle>

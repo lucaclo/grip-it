@@ -47,8 +47,10 @@ export function CountUp({
     return () => cancelAnimationFrame(raf);
   }, [value, duration, reduced]);
 
-  const text = (reduced ? value : shown).toFixed(decimals);
-  const final = value.toFixed(decimals);
+  const fmt = (n: number) =>
+    n.toLocaleString("en-GB", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  const text = fmt(reduced ? value : shown);
+  const final = fmt(value);
   return (
     <span className={className}>
       <span aria-hidden>

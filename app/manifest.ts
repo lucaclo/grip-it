@@ -5,6 +5,8 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Grip It",
     short_name: "Grip It",
     description: "Log lifts, get research-backed targets, beat your friends.",
+    // A fixed id keeps installs from invite links the same app (their start_url differs).
+    id: "/",
     start_url: "/",
     display: "standalone",
     background_color: "#16141f",

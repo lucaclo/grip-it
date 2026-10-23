@@ -1,17 +1,10 @@
 "use client";
 
-import {
-  Flame,
-  HandMetal,
-  Laugh,
-  Skull,
-  Trophy,
-  TriangleAlert,
-  BicepsFlexed,
-  type LucideIcon,
-} from "lucide-react";
+import { Heart, MessageCircle, Trophy, TriangleAlert } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useRef, useState } from "react";
+import { CommentsSheet } from "@/components/feed/comments";
 import { Avatar, EmptyState, PageHeader } from "@/components/ui/bits";
 import { useBurst } from "@/components/ui/motion";
 import { PlateBar } from "@/components/plate-bar";
@@ -19,38 +12,16 @@ import { MUSCLE_LABEL } from "@/lib/science/volume";
 import {
   exerciseMap,
   feed,
-  seededReactions,
+  hardSetsIn,
+  liftedKg,
+  seededLikes,
+  threadFor,
   userName,
-  volumeKg,
+  type FeedItem,
 } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
-import type { ReactionCode } from "@/lib/data/types";
-
-// Each reaction has its own colour, so a post's mood reads at a glance. Full class strings for Tailwind.
-type Tone = { on: string; count: string; burst: string };
-const TONES: Record<ReactionCode, Tone> = {
-  flame: { on: "border-warning/70 bg-warning/18 text-warning shadow-[0_6px_18px_-6px_rgb(255_200_87/0.6)]", count: "text-warning", burst: "text-warning" },
-  muscle: { on: "border-volt/70 bg-volt/15 text-volt shadow-glow-volt", count: "text-volt", burst: "text-volt" },
-  laugh: { on: "border-accent-2/70 bg-accent-2/18 text-accent-2 shadow-[0_6px_18px_-6px_rgb(229_139_255/0.6)]", count: "text-accent-2", burst: "text-accent-2" },
-  metal: { on: "border-accent/70 bg-accent/18 text-accent shadow-glow", count: "text-accent", burst: "text-accent" },
-  skull: { on: "border-muted/60 bg-muted/15 text-text", count: "text-text", burst: "text-muted" },
-};
-
-const REACTIONS: { code: ReactionCode; label: string; Icon: LucideIcon }[] = [
-  { code: "flame", label: "Fire", Icon: Flame },
-  { code: "muscle", label: "Strong", Icon: BicepsFlexed },
-  { code: "laugh", label: "Laugh", Icon: Laugh },
-  { code: "metal", label: "Rock on", Icon: HandMetal },
-  { code: "skull", label: "Dead", Icon: Skull },
-];
-
-function ago(iso: string, now: number) {
-  const m = Math.round((now - Date.parse(iso)) / 60000);
-  if (m < 60) return `${Math.max(1, m)}m`;
-  const h = Math.round(m / 60);
-  if (h < 24) return `${h}h`;
-  return `${Math.round(h / 24)}d`;
-}
+import { gripTag } from "@/lib/science/grips";
+import { ago } from "@/lib/time";
 
 function dayLabel(iso: string, now: number) {
   const d = new Date(iso);
@@ -71,7 +42,7 @@ export default function Feed() {
   const s = useStore();
   const [now] = useState(() => Date.now());
   const items = useMemo(() => feed(s), [s]);
-  const ex = useMemo(() => exerciseMap(s), [s]);
+  const [commentsFor, setCommentsFor] = useState<string | null>(null);
 
   if (!items.length)
     return (
@@ -79,8 +50,8 @@ export default function Feed() {
         <PageHeader title="Feed" />
         <EmptyState
           icon={<Trophy className="size-10" />}
-          title="Nothing to react to yet"
-          body="When your crew trains, their sessions and PRs land here. Invite someone to get it going."
+          title="Nothing here yet"
+          body="Your workouts and PRs land here, and your crew's will too once friends can join."
         />
       </>
     );
@@ -96,7 +67,7 @@ export default function Feed() {
 
   return (
     <>
-      <PageHeader title="Feed" subtitle={s.groupName} />
+      <PageHeader title="Feed" subtitle="Double-tap a post to like it" />
       <div className="flex flex-col gap-6">
         {groups.map((g) => (
           <section key={g.label} aria-label={g.label}>
@@ -108,195 +79,209 @@ export default function Feed() {
               />
             </h2>
             <ul className="stagger flex flex-col gap-3">
-              {g.items.map((it) => {
-                const name = userName(s, it.userId);
-                const mine = s.reactions[it.id] ?? {};
-                const seeded = seededReactions(it.id);
-                const def =
-                  it.kind === "pr" ? ex.get(it.pr.exerciseId) : undefined;
-                return (
-                  <li
-                    key={it.id}
-                    className={`rounded-lg p-4 ${it.kind === "pr" ? "border border-pr/40 bg-gradient-to-br from-pr/14 via-surface to-accent-2/10 shadow-[0_18px_40px_-24px_rgb(255_200_87/0.6)]" : "card"}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`rounded-full p-[2px] ${it.kind === "pr" ? "bg-gradient-to-br from-pr to-accent-2" : "bg-gradient-to-br from-accent/70 to-accent-2/50"}`}
-                      >
-                        <Avatar name={name} you={it.userId === "me"} />
-                      </span>
-                      <p className="flex-1 text-sm text-muted">
-                        <span className="font-semibold text-text">
-                          {it.userId === "me" ? "You" : name}
-                        </span>{" "}
-                        {it.kind === "pr" ? "hit a PR" : "finished a workout"} ·{" "}
-                        {ago(it.at, now)}
-                      </p>
-                      {it.kind === "pr" && (
-                        <Trophy aria-hidden className="size-5 text-pr" />
-                      )}
-                    </div>
-
-                    {it.kind === "pr" ? (
-                      <div className="mt-3">
-                        <p className="font-display text-lg font-semibold">
-                          {def?.name}
-                        </p>
-                        <p className="num-hero mt-0.5 text-[2.5rem] leading-none text-pr">
-                          {it.pr.kg} kg × {it.pr.reps}
-                        </p>
-                        <p className="mt-1 text-sm text-muted">
-                          e1RM {it.pr.e1rm} kg
-                          {it.pr.previous != null && (
-                            <span className="text-success">
-                              {" "}
-                              · +
-                              {Math.round((it.pr.e1rm - it.pr.previous) * 10) /
-                                10}{" "}
-                              kg on last best
-                            </span>
-                          )}
-                        </p>
-                        {def?.equipment === "barbell" && (
-                          <div className="mt-3 rounded-md bg-black/20 py-2">
-                            <PlateBar kg={it.pr.kg} />
-                          </div>
-                        )}
-                        {it.pr.flagged && (
-                          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-warning/50 px-2 py-0.5 text-xs text-warning">
-                            <TriangleAlert aria-hidden className="size-3.5" />{" "}
-                            Big jump: honour system
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <Link
-                        href={`/workout/${it.workout.id}`}
-                        transitionTypes={["drill-in"]}
-                        className="press mt-3 block rounded-md bg-surface-raised/80 p-3"
-                      >
-                        <span className="flex items-baseline justify-between gap-2">
-                          <span className="font-display text-xl font-semibold">
-                            {it.workout.title}
-                          </span>
-                          <span className="num-hero text-xl text-accent">
-                            {Math.round(volumeKg(it.workout)).toLocaleString(
-                              "en-GB",
-                            )}
-                            <span className="ml-0.5 text-sm not-italic text-muted">
-                              kg
-                            </span>
-                          </span>
-                        </span>
-                        <span className="tabular block text-sm text-muted">
-                          {it.workout.exercises.length} exercise{it.workout.exercises.length === 1 ? "" : "s"} ·{" "}
-                          {it.workout.exercises.reduce(
-                            (a, e) => a + e.sets.length,
-                            0,
-                          )}{" "}
-                          sets
-                        </span>
-                        <span className="mt-2 flex flex-wrap gap-1.5">
-                          {[
-                            ...new Set(
-                              it.workout.exercises
-                                .map((e) => ex.get(e.exerciseId)?.primary)
-                                .filter(Boolean),
-                            ),
-                          ]
-                            .slice(0, 4)
-                            .map((m) => (
-                              <span
-                                key={m}
-                                className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-xs text-accent"
-                              >
-                                {MUSCLE_LABEL[m!]}
-                              </span>
-                            ))}
-                        </span>
-                      </Link>
-                    )}
-
-                    <div
-                      className="mt-3 flex gap-1.5"
-                      role="group"
-                      aria-label="Reactions"
-                    >
-                      {REACTIONS.map(({ code, label, Icon }) => {
-                        const on = (mine[code] ?? []).includes("me");
-                        const count =
-                          (seeded[code]?.length ?? 0) + (on ? 1 : 0);
-                        return (
-                          <ReactionButton
-                            key={code}
-                            on={on}
-                            count={count}
-                            label={label}
-                            Icon={Icon}
-                            tone={TONES[code]}
-                            onToggle={() => s.toggleReaction(it.id, code)}
-                          />
-                        );
-                      })}
-                    </div>
-                  </li>
-                );
-              })}
+              {g.items.map((it) => (
+                <FeedCard key={it.id} item={it} now={now} onComments={() => setCommentsFor(it.id)} />
+              ))}
             </ul>
           </section>
         ))}
       </div>
+      <CommentsSheet itemId={commentsFor} onClose={() => setCommentsFor(null)} />
     </>
   );
 }
 
-function ReactionButton({
-  on,
-  count,
-  label,
-  Icon,
-  tone,
-  onToggle,
-}: {
-  on: boolean;
-  count: number;
-  label: string;
-  Icon: LucideIcon;
-  tone: Tone;
-  onToggle: () => void;
-}) {
+const DOUBLE_TAP_MS = 280;
+
+function FeedCard({ item: it, now, onComments }: { item: FeedItem; now: number; onComments: () => void }) {
+  const s = useStore();
+  const router = useRouter();
+  const ex = useMemo(() => exerciseMap(s), [s]);
+  const name = userName(s, it.userId);
+  const def = it.kind === "pr" ? ex.get(it.pr.exerciseId) : undefined;
+  const likers = [...seededLikes(it.id, s.friends.map((f) => f.id)), ...(s.likes[it.id] ?? [])];
+  const liked = likers.includes("me");
+  const thread = threadFor(s, it.id);
+  const commentCount = thread.reduce((a, c) => a + 1 + c.replies.length, 0);
+  const latest = s.comments.filter((c) => c.itemId === it.id).sort((a, b) => b.at.localeCompare(a.at))[0];
+
+  // Double-tap anywhere on the post likes it (never unlikes), with a heart that pops in the middle.
+  // A single tap on a workout still opens it, once it's clear no second tap is coming.
+  const [hearts, setHearts] = useState<number[]>([]);
+  const last = useRef<{ t: number; x: number; y: number } | null>(null);
+  const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { bursts, fire } = useBurst();
+
+  function popHeart() {
+    const id = Date.now();
+    setHearts((h) => [...h, id]);
+    setTimeout(() => setHearts((h) => h.filter((x) => x !== id)), 900);
+  }
+
+  function onTap(e: React.MouseEvent, single?: () => void) {
+    const t = e.timeStamp;
+    const p = last.current;
+    if (p && t - p.t < DOUBLE_TAP_MS && Math.hypot(e.clientX - p.x, e.clientY - p.y) < 40) {
+      if (pending.current) clearTimeout(pending.current);
+      pending.current = null;
+      last.current = null;
+      popHeart();
+      if (s.like(it.id)) {
+        fire();
+        navigator.vibrate?.(12);
+      }
+      return;
+    }
+    last.current = { t, x: e.clientX, y: e.clientY };
+    if (single) pending.current = setTimeout(single, DOUBLE_TAP_MS);
+  }
+
+  const likeLine =
+    likers.length === 0
+      ? null
+      : liked
+        ? likers.length === 1
+          ? "You like this"
+          : `You and ${likers.length - 1} other${likers.length === 2 ? "" : "s"}`
+        : `${likers.length} like${likers.length === 1 ? "" : "s"}`;
+
   return (
-    <button
-      type="button"
-      aria-pressed={on}
-      aria-label={`${label}, ${count}`}
-      onClick={() => {
-        if (!on) fire();
-        onToggle();
+    <li
+      className={`relative touch-manipulation select-none rounded-lg p-4 ${it.kind === "pr" ? "border border-pr/40 bg-gradient-to-br from-pr/14 via-surface to-accent-2/10 shadow-[0_18px_40px_-24px_rgb(255_200_87/0.6)]" : "card"}`}
+      onClick={(e) => {
+        // Taps on buttons and the workout link are handled by those; anywhere else counts for double-tap.
+        if ((e.target as HTMLElement).closest("button, a")) return;
+        onTap(e);
       }}
-      className={`relative flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-full border px-2.5 text-sm transition-all duration-200 active:scale-90 ${on ? tone.on : count > 0 ? "border-border text-muted" : "border-border/60 text-subtle"}`}
     >
-      <Icon
-        aria-hidden
-        className={`size-4 transition-transform ${on ? "scale-110" : ""}`}
-      />
-      {count > 0 && (
+      <div className="flex items-center gap-3">
         <span
-          key={count}
-          className={`tabular inline-block motion-safe:animate-bump ${tone.count}`}
+          className={`rounded-full p-[2px] ${it.kind === "pr" ? "bg-gradient-to-br from-pr to-accent-2" : "bg-gradient-to-br from-accent/70 to-accent-2/50"}`}
         >
-          {count}
+          <Avatar name={name} you={it.userId === "me"} />
         </span>
+        <p className="flex-1 text-sm text-muted">
+          <span className="font-semibold text-text">{it.userId === "me" ? "You" : name}</span>{" "}
+          {it.kind === "pr" ? "hit a PR" : "finished a workout"} · {ago(it.at, now)}
+        </p>
+        {it.kind === "pr" && <Trophy aria-hidden className="size-5 text-pr" />}
+      </div>
+
+      {it.kind === "pr" ? (
+        <div className="mt-3">
+          <p className="font-display text-lg font-semibold">
+            {def?.name}
+            {it.pr.grip && <span className="text-muted"> · {gripTag(it.pr.exerciseId, it.pr.grip)}</span>}
+          </p>
+          <p className="num-hero mt-0.5 text-[2.5rem] leading-none text-pr">
+            {it.pr.kg} kg × {it.pr.reps}
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            e1RM {it.pr.e1rm} kg
+            {it.pr.previous != null && (
+              <span className="text-success"> · +{Math.round((it.pr.e1rm - it.pr.previous) * 10) / 10} kg on last best</span>
+            )}
+          </p>
+          {def?.equipment === "barbell" && (
+            <div className="mt-3 rounded-md bg-black/20 py-2">
+              <PlateBar kg={it.pr.kg} />
+            </div>
+          )}
+          {it.pr.flagged && (
+            <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-warning/50 px-2 py-0.5 text-xs text-warning">
+              <TriangleAlert aria-hidden className="size-3.5" /> Big jump: honour system
+            </p>
+          )}
+        </div>
+      ) : (
+        <Link
+          href={`/workout/${it.workout.id}`}
+          transitionTypes={["drill-in"]}
+          onClick={(e) => {
+            // Keyboard activation (no pointer) opens straight away; taps wait to see if a second one comes.
+            if (e.detail === 0) return;
+            e.preventDefault();
+            onTap(e, () => router.push(`/workout/${it.workout.id}`, { transitionTypes: ["drill-in"] }));
+          }}
+          className="press mt-3 block rounded-md bg-surface-raised/80 p-3"
+        >
+          <span className="flex items-baseline justify-between gap-2">
+            <span className="font-display text-xl font-semibold">{it.workout.title}</span>
+            <span className="num-hero text-xl text-accent">
+              {liftedKg(s, it.workout).toLocaleString("en-GB")}
+              <span className="ml-0.5 text-sm not-italic text-muted">kg</span>
+            </span>
+          </span>
+          <span className="tabular block text-sm text-muted">
+            {it.workout.exercises.length} exercise{it.workout.exercises.length === 1 ? "" : "s"} · {hardSetsIn(s, it.workout)} hard sets
+          </span>
+          <span className="mt-2 flex flex-wrap gap-1.5">
+            {[...new Set(it.workout.exercises.map((e) => ex.get(e.exerciseId)?.primary).filter(Boolean))]
+              .slice(0, 4)
+              .map((m) => (
+                <span key={m} className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-xs text-accent">
+                  {MUSCLE_LABEL[m!]}
+                </span>
+              ))}
+          </span>
+        </Link>
       )}
-      {bursts.map((b) => (
-        <Icon
-          key={b.id}
+
+      {/* The heart that pops on double-tap. */}
+      {hearts.map((h) => (
+        <Heart
+          key={h}
           aria-hidden
-          style={{ "--dx": `${b.dx}px` } as React.CSSProperties}
-          className={`pointer-events-none absolute top-1 left-1/2 size-4 -ml-2 animate-float-up ${tone.burst}`}
+          className="pointer-events-none absolute top-1/2 left-1/2 size-24 -translate-x-1/2 -translate-y-1/2 fill-danger text-danger drop-shadow-[0_8px_24px_rgb(255_107_122/0.6)] motion-safe:animate-heart"
         />
       ))}
-    </button>
+
+      <div className="mt-2 -mb-2 flex items-center gap-1">
+        <button
+          type="button"
+          aria-pressed={liked}
+          aria-label={liked ? "Unlike" : "Like"}
+          onClick={() => {
+            if (!liked) fire();
+            s.toggleLike(it.id);
+          }}
+          className="relative -ml-2.5 grid size-11 place-items-center rounded-full active:scale-90 transition-transform"
+        >
+          <Heart
+            aria-hidden
+            className={`size-6 transition-[color,fill,scale] duration-200 ${liked ? "scale-110 fill-danger text-danger" : "text-muted"}`}
+          />
+          {bursts.map((b) => (
+            <Heart
+              key={b.id}
+              aria-hidden
+              style={{ "--dx": `${b.dx}px` } as React.CSSProperties}
+              className="pointer-events-none absolute top-1 left-1/2 -ml-2 size-4 fill-danger text-danger animate-float-up"
+            />
+          ))}
+        </button>
+        <button
+          type="button"
+          onClick={onComments}
+          aria-label={`Comments, ${commentCount}`}
+          className="grid size-11 place-items-center rounded-full text-muted active:scale-90 transition-transform"
+        >
+          <MessageCircle aria-hidden className="size-6" />
+        </button>
+        <p className="flex-1 text-sm text-muted">
+          {likeLine && <span key={likers.length} className="inline-block motion-safe:animate-bump">{likeLine}</span>}
+        </p>
+      </div>
+
+      {commentCount > 0 && latest && (
+        <button type="button" onClick={onComments} className="mt-2 block w-full text-left text-sm">
+          <span className="line-clamp-2">
+            <span className="font-semibold">{latest.userId === "me" ? "You" : userName(s, latest.userId)}</span>{" "}
+            <span className="text-text">{latest.text}</span>
+          </span>
+          {commentCount > 1 && <span className="mt-0.5 block text-subtle">View all {commentCount} comments</span>}
+        </button>
+      )}
+    </li>
   );
 }

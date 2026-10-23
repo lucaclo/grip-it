@@ -4,11 +4,14 @@ import { LineChart as ChartIcon, Medal, Target, TrendingDown, TrendingUp } from 
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { ExerciseAnatomy } from "@/components/anatomy/exercise-anatomy";
 import { PlateBar } from "@/components/plate-bar";
 import { Card, EmptyState, PageHeader, SectionTitle } from "@/components/ui/bits";
 import { CountUp } from "@/components/ui/motion";
 import { allPRs, exerciseMap, suggestionFor, workoutsOf } from "@/lib/data/selectors";
+import type { Exercise } from "@/lib/data/exercises";
 import { useStore } from "@/lib/data/store";
+import { gripTag } from "@/lib/science/grips";
 import { e1rm } from "@/lib/science/strength";
 import { MUSCLE_LABEL } from "@/lib/science/volume";
 
@@ -24,18 +27,20 @@ export default function ExerciseHistory() {
         .filter((w) => w.exercises.some((e) => e.exerciseId === id))
         .reverse()
         .map((w) => {
-          const sets = w.exercises.find((e) => e.exerciseId === id)!.sets.filter((x) => x.type !== "warmup");
+          const logged = w.exercises.find((e) => e.exerciseId === id)!;
+          const sets = logged.sets.filter((x) => x.type !== "warmup");
           let best = { kg: 0, reps: 0, v: 0 };
           for (const x of sets) {
             const v = e1rm(x.kg, x.reps) ?? 0;
             if (v > best.v) best = { kg: x.kg, reps: x.reps, v };
           }
-          return { date: w.startedAt.slice(5, 10), at: w.startedAt, e1rm: best.v, best, sets };
+          return { date: w.startedAt.slice(5, 10), at: w.startedAt, e1rm: best.v, best, sets, grip: logged.grip };
         }),
     [s, id],
   );
   const prs = useMemo(() => allPRs(s).filter((p) => p.userId === "me" && p.exerciseId === id).reverse(), [s, id]);
-  const next = useMemo(() => suggestionFor(s, id), [s, id]);
+  // Next target on the grip you used last.
+  const next = useMemo(() => suggestionFor(s, id, undefined, sessions[sessions.length - 1]?.grip), [s, id, sessions]);
 
   if (!def) return <EmptyState icon={<ChartIcon className="size-10" />} title="Exercise not found" body="" />;
 
@@ -47,9 +52,12 @@ export default function ExerciseHistory() {
 
   return (
     <>
-      <PageHeader title={def.name} subtitle={`${MUSCLE_LABEL[def.primary]} · ${def.equipment}`} />
+      <PageHeader back="/log" title={def.name} subtitle={`${MUSCLE_LABEL[def.primary]} · ${def.equipment}`} />
       {sessions.length === 0 ? (
-        <EmptyState icon={<ChartIcon className="size-10" />} title="Not logged yet" body="Add this exercise to a workout and your history starts here." />
+        <div className="stagger flex flex-col gap-4">
+          <EmptyState icon={<ChartIcon className="size-10" />} title="Not logged yet" body="Add this exercise to a workout and your history starts here." />
+          <MusclesCard exercise={def} />
+        </div>
       ) : (
         <div className="stagger flex flex-col gap-4">
           <section className="card-hero shine shine-soft rounded-xl p-5">
@@ -83,6 +91,8 @@ export default function ExerciseHistory() {
               </p>
             )}
           </section>
+
+          <MusclesCard exercise={def} />
 
           {sessions.length >= 2 ? (
             <Card>
@@ -177,7 +187,10 @@ export default function ExerciseHistory() {
               {[...sessions].reverse().map((x, i) => (
                 <li key={i} className="card flex items-center gap-3 rounded-md px-3 py-2.5 text-sm">
                   <span className="w-12 text-muted">{new Date(x.at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
-                  <span className="tabular flex-1">{x.sets.map((y) => `${y.kg}×${y.reps}`).join("  ")}</span>
+                  <span className="flex-1">
+                    <span className="tabular block">{x.sets.map((y) => `${y.kg}×${y.reps}`).join("  ")}</span>
+                    {gripTag(id, x.grip) && <span className="block text-xs text-subtle">{gripTag(id, x.grip)}</span>}
+                  </span>
                   <span className="num-hero text-base text-accent">{x.e1rm}</span>
                 </li>
               ))}
@@ -186,5 +199,19 @@ export default function ExerciseHistory() {
         </div>
       )}
     </>
+  );
+}
+
+function MusclesCard({ exercise }: { exercise: Exercise }) {
+  return (
+    <Card>
+      <SectionTitle>Muscles worked</SectionTitle>
+      <ExerciseAnatomy exercise={exercise} figureClass="max-h-[26rem]" />
+      {exercise.aliases?.length ? (
+        <p className="mt-4 text-sm text-muted">
+          Also called {exercise.aliases.join(", ")}. They all log here, so your history stays in one place.
+        </p>
+      ) : null}
+    </Card>
   );
 }

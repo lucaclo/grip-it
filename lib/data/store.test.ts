@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { useStore } from "./store";
+import { migrate, STORE_VERSION, useStore } from "./store";
 
 const set = (kg: number, reps: number) => ({ kg, reps, rir: null, type: "normal" as const, done: false });
 
@@ -140,5 +140,93 @@ describe("quick nutrition", () => {
     st.addNutrition({ kcal: -600, proteinG: -40 }, "2026-10-21");
     st.addNutrition({ kcal: -999, proteinG: -999 }, "2026-10-21");
     expect(useStore.getState().nutrition.find((n) => n.day === "2026-10-21")).toMatchObject({ kcal: 0, proteinG: 0 });
+  });
+});
+
+describe("onboarding", () => {
+  const profile = {
+    name: "Luca",
+    heightCm: 180,
+    sex: "male" as const,
+    birthYear: 2005,
+    bodyFatPct: null,
+    activity: "moderate" as const,
+    goal: "hypertrophy" as const,
+    experience: "beginner" as const,
+    targetWeightKg: 80,
+    targetDate: null,
+    rirEnabled: false,
+    sessionsPerWeek: 3,
+    shareWeight: false,
+    shareNutrition: false,
+  };
+
+  beforeEach(() => useStore.getState().resetAll());
+
+  it("a real profile starts blank: no demo friends, their workouts or sample history", () => {
+    useStore.getState().completeOnboarding(profile, 78, false);
+    const s = useStore.getState();
+    expect(s.me?.name).toBe("Luca");
+    expect(s.friends).toEqual([]);
+    expect(s.workouts).toEqual([]);
+    expect(s.weights).toEqual([{ day: expect.any(String), kg: 78 }]);
+  });
+
+  it("the demo option keeps the made-up friends and adds sample history", () => {
+    useStore.getState().completeOnboarding(profile, 78, true);
+    const s = useStore.getState();
+    expect(s.friends.length).toBeGreaterThan(0);
+    expect(s.workouts.some((w) => w.userId === "me")).toBe(true);
+  });
+});
+
+describe("saved data upgrades (v1 -> v2)", () => {
+  it("turns your old emoji reactions into likes and keeps everything else", () => {
+    const v1 = {
+      me: null,
+      friends: [],
+      groupName: "Crew",
+      workouts: [{ id: "w1" }],
+      customExercises: [],
+      weights: [{ day: "2026-10-01", kg: 80 }],
+      nutrition: [],
+      reactions: { "w-w1": { flame: ["me", "f-sam"] }, "w-w2": { laugh: ["f-sam"] } },
+      draft: null,
+    };
+    const v2 = migrate(v1, 1);
+    expect(v2.likes).toEqual({ "w-w1": ["me"] });
+    expect(v2.comments).toEqual([]);
+    expect(v2.reactions).toEqual(v1.reactions);
+    expect(v2.workouts).toEqual(v1.workouts);
+    expect(v2.weights).toEqual(v1.weights);
+  });
+  it("leaves current data alone", () => {
+    const st = { likes: { a: ["me"] }, comments: [{ id: "c" }] };
+    expect(migrate(st, STORE_VERSION)).toEqual(st);
+  });
+});
+
+describe("likes and comments", () => {
+  beforeEach(() => useStore.getState().resetAll());
+
+  it("double-tap likes once and never unlikes; the heart button toggles", () => {
+    const st = useStore.getState();
+    expect(st.like("w-1")).toBe(true);
+    expect(useStore.getState().like("w-1")).toBe(false);
+    expect(useStore.getState().likes["w-1"]).toEqual(["me"]);
+    useStore.getState().toggleLike("w-1");
+    expect(useStore.getState().likes["w-1"]).toEqual([]);
+  });
+
+  it("comments and replies; deleting a comment removes its replies", () => {
+    const st = useStore.getState();
+    st.addComment("w-1", "  Huge session  ");
+    const top = useStore.getState().comments[0];
+    expect(top.text).toBe("Huge session");
+    useStore.getState().addComment("w-1", "Thanks!", top.id);
+    useStore.getState().addComment("w-1", "   ");
+    expect(useStore.getState().comments).toHaveLength(2);
+    useStore.getState().deleteComment(top.id);
+    expect(useStore.getState().comments).toEqual([]);
   });
 });

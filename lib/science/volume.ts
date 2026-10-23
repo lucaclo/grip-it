@@ -1,5 +1,4 @@
 import { cite } from "./citations";
-import type { SetType } from "./progression";
 
 export const MUSCLES = [
   "chest",
@@ -75,14 +74,6 @@ export function filterMuscles(f: Muscle | MuscleGroup): Muscle[] {
 /** Weekly hard-set band per muscle: at least 10 for growth, more than 20 is a lot to recover from. */
 export const VOLUME_BAND = { min: 10, max: 20 } as const;
 export const VOLUME_CITATIONS = cite("schoenfeld2017volume", "pelland2024volume");
-
-export type VolumeSet = { rir?: number | null; type?: SetType; reps: number };
-
-/** A hard set: not a warm-up, at least one rep, and (if RIR was logged) 3 or fewer reps in reserve. */
-export function isHardSet(s: VolumeSet): boolean {
-  if (s.type === "warmup" || s.reps <= 0) return false;
-  return s.rir == null || s.rir <= 3;
-}
 
 export function addVolume(
   totals: Partial<Record<Muscle, number>>,

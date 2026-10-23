@@ -1,39 +1,56 @@
 "use client";
 
-import { Crown, Flag, Info, Medal, TriangleAlert, UserPlus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { Avatar, Card, Citations, PageHeader, SectionTitle } from "@/components/ui/bits";
-import { Segmented } from "@/components/ui/fields";
+import { Crown, Flag, Medal, TriangleAlert } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { HardSetsInfo, PowerliftingInfo, VolumeBoardInfo } from "@/components/explainers";
+import { FriendsCard } from "@/components/friends/friends-card";
+import { Avatar, PageHeader, SectionTitle } from "@/components/ui/bits";
+import { InfoButton } from "@/components/ui/info";
 import { CountUp } from "@/components/ui/motion";
 import { allPRs, DAY_MS, leaderboard, weekStart, weeklyHardSets, type Metric } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
-import { DOTS_CITATIONS } from "@/lib/science/strength";
-import { VOLUME_CITATIONS } from "@/lib/science/volume";
+import { E1RM_CITATIONS } from "@/lib/science/strength";
 
-const METRICS: { value: Metric; label: string; explain: string; keys: string[] }[] = [
-  {
-    value: "hard_sets",
-    label: "Hard sets",
-    explain: "Working sets this week (Monday to Sunday). Warm-ups don't count, and sets logged with more than 3 reps in reserve don't either.",
-    keys: VOLUME_CITATIONS,
-  },
+// One short line under the board says what's being ranked; the "i" holds the full explanation.
+const METRICS: { value: Metric; label: string; caption: string; info: ReactNode }[] = [
+  { value: "hard_sets", label: "Hard sets", caption: "Hard sets this week, Monday to Sunday.", info: <HardSetsInfo /> },
+  { value: "volume", label: "Volume", caption: "Total kg lifted this week (weight × reps).", info: <VolumeBoardInfo /> },
   {
     value: "pct_improvement",
     label: "% Gain",
-    explain: "Average estimated 1-rep-max gain across your lifts, compared with your best in your first 14 days. Fair for every size and level.",
-    keys: ["epley1985"],
+    caption: "Average strength gain since your first two weeks.",
+    info: (
+      <InfoButton title="% Gain" label="How % gain works" keys={E1RM_CITATIONS}>
+        <p>
+          For every lift, your best estimated 1-rep max now is compared with your best in your first 14 days on it. The
+          board shows the average gain across your lifts.
+        </p>
+        <p className="text-muted">
+          It&apos;s fair for every size and level: a beginner adding 20% beats a strong lifter adding 5%. New lifts are
+          &ldquo;calibrating&rdquo; for 14 days before they count.
+        </p>
+      </InfoButton>
+    ),
   },
   {
     value: "dots",
-    label: "DOTS",
-    explain: "Squat + bench + deadlift (estimated 1RMs) adjusted for body weight. Your weight is used to score but never shown.",
-    keys: DOTS_CITATIONS,
+    label: "Powerlifting",
+    caption: "Squat + bench + deadlift maxes, adjusted for body weight (DOTS) so lighter and heavier lifters compete fairly.",
+    info: <PowerliftingInfo />,
   },
   {
     value: "streak",
     label: "Streak",
-    explain: "Weeks in a row hitting your own sessions-per-week goal. Showing up beats being strong here.",
-    keys: [],
+    caption: "Weeks in a row hitting your own sessions-per-week goal.",
+    info: (
+      <InfoButton title="Streak" label="How streaks work">
+        <p>
+          A week counts when you hit your own goal for sessions per week (set on Me). The streak is how many weeks in a row
+          you&apos;ve done it.
+        </p>
+        <p className="text-muted">This week joins the streak once you hit the goal; it never breaks it early.</p>
+      </InfoButton>
+    ),
   },
 ];
 
@@ -59,7 +76,7 @@ export default function Compete() {
     <>
       <PageHeader title="Compete" subtitle={s.groupName} />
       <div className="stagger flex flex-col gap-4">
-        <Segmented label="Leaderboard" hideLabel value={metric} onChange={setMetric} options={METRICS.map((x) => ({ value: x.value, label: x.label }))} />
+        <MetricTabs value={metric} onChange={setMetric} />
 
         {podium.length >= 2 && <Podium key={metric} rows={podium} flagged={flaggedUsers} />}
 
@@ -100,33 +117,54 @@ export default function Compete() {
           })}
         </ol>
 
-        <Card>
-          <p className="flex gap-2 text-sm text-muted">
-            <Info aria-hidden className="mt-0.5 size-4 shrink-0" />
-            {m.explain}
-          </p>
-          {m.keys.length > 0 && (
-            <div className="mt-3">
-              <Citations keys={m.keys} />
-            </div>
-          )}
-        </Card>
+        <div className="-mt-1 flex items-start gap-2 px-1">
+          <p className="flex-1 text-sm text-muted">{m.caption}</p>
+          <span className="pt-0.5">{m.info}</span>
+        </div>
 
         <section>
           <SectionTitle>Weekly challenge</SectionTitle>
           <RaceTrack challenge={challenge} />
         </section>
 
-        <button
-          type="button"
-          onClick={() => navigator.share?.({ title: "Join me on Grip It", text: `Join ${s.groupName} on Grip It`, url: location.origin })}
-          className="flex min-h-14 items-center justify-center gap-2 rounded-lg border border-dashed border-border text-muted"
-        >
-          <UserPlus aria-hidden className="size-5" /> Invite a friend
-        </button>
-        <p className="-mt-2 text-center text-xs text-subtle">Demo friends are made up. Real invites arrive with accounts.</p>
+        <FriendsCard />
+        {!s.account?.group && s.friends.length > 0 && (
+          <p className="-mt-2 text-center text-xs text-subtle">The people above are made-up demo friends.</p>
+        )}
       </div>
     </>
+  );
+}
+
+/** Leaderboard picker: pills that scroll sideways on narrow phones, the chosen one kept in view. */
+function MetricTabs({ value, onChange }: { value: Metric; onChange: (m: Metric) => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    ref.current?.querySelector<HTMLElement>('[aria-checked="true"]')?.scrollIntoView({ inline: "nearest", block: "nearest", behavior: "smooth" });
+  }, [value]);
+  return (
+    <div
+      ref={ref}
+      role="radiogroup"
+      aria-label="Leaderboard"
+      className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
+      {METRICS.map((x) => {
+        const on = x.value === value;
+        return (
+          <button
+            key={x.value}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            onClick={() => onChange(x.value)}
+            className={`min-h-11 shrink-0 snap-start rounded-full border px-4 text-sm font-medium transition-colors duration-200 ${on ? "border-accent/70 bg-accent/18 text-text shadow-glow" : "border-border bg-surface/80 text-muted"}`}
+          >
+            {x.label}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 

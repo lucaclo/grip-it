@@ -4,7 +4,7 @@ import { energy, katchMcArdle, mifflinStJeor } from "./energy";
 import { nextSession } from "./progression";
 import { dots, e1rm } from "./strength";
 import { protein, targets } from "./targets";
-import { addVolume, isHardSet, volumeStatus } from "./volume";
+import { addVolume, volumeStatus } from "./volume";
 
 const base = {
   weightKg: 80,
@@ -153,11 +153,6 @@ describe("progression (hypertrophy 6-12)", () => {
 });
 
 describe("volume", () => {
-  it("hard sets exclude warm-ups and RIR > 3", () => {
-    expect(isHardSet({ reps: 8 })).toBe(true);
-    expect(isHardSet({ reps: 8, rir: 4 })).toBe(false);
-    expect(isHardSet({ reps: 8, type: "warmup" })).toBe(false);
-  });
   it("secondary muscles count half", () => {
     const t = {};
     addVolume(t, "chest", ["triceps", "front_delts"], 4);

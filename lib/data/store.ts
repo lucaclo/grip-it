@@ -5,11 +5,13 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type { Exercise } from "./exercises";
 import { DEMO_FRIENDS, demoWorkouts, generateHistory } from "./seed";
 import type {
+  Account,
+  Comment,
   Draft,
+  Friend,
   DraftSet,
   NutritionDay,
   Profile,
-  ReactionCode,
   State,
   Workout,
 } from "./types";
@@ -21,7 +23,7 @@ import type {
  * STORE_VERSION + migrate() are how personal data survives app updates: bump the version
  * whenever the persisted shape changes and add an upgrade step. Never drop user data.
  */
-export const STORE_VERSION = 1;
+export const STORE_VERSION = 3;
 
 const today = () => new Date().toISOString().slice(0, 10);
 const uid = () =>
@@ -39,20 +41,54 @@ function initialState(): State {
     weights: [],
     nutrition: [],
     reactions: {},
+    likes: {},
+    comments: [],
     draft: null,
+    account: null,
+    syncQueue: { upserts: [], deletes: [] },
   };
+}
+
+/**
+ * Upgrades saved data from older versions. Each step only adds or converts; nothing is dropped.
+ * v1 -> v2: emoji reactions became likes (any reaction of yours = a like); comments start empty.
+ * v2 -> v3: friends sync. No account yet, and your existing workouts queue to upload once you join.
+ * Grip variations (WorkoutExercise.grip) are optional, so v3 data needs no step: no grip = the usual grip.
+ */
+export function migrate(persisted: unknown, fromVersion: number): State {
+  const st = { ...(persisted as State) };
+  if (fromVersion < 2) {
+    const reactions = st.reactions ?? {};
+    st.likes = Object.fromEntries(
+      Object.entries(reactions)
+        .filter(([, byCode]) => Object.values(byCode ?? {}).some((users) => users?.includes("me")))
+        .map(([itemId]) => [itemId, ["me"]]),
+    );
+    st.comments = [];
+  }
+  if (fromVersion < 3) {
+    st.account = null;
+    st.syncQueue = { upserts: (st.workouts ?? []).filter((w) => w.userId === "me").map((w) => w.id), deletes: [] };
+  }
+  return st;
 }
 
 type Actions = {
   completeOnboarding: (
     p: Omit<Profile, "id" | "onboardedAt">,
     startWeightKg: number,
-    withSampleHistory: boolean,
+    withDemo: boolean,
   ) => void;
   updateProfile: (patch: Partial<Profile>) => void;
   startWorkout: () => void;
   discardDraft: () => void;
-  addExerciseToDraft: (exerciseId: string, prefill: DraftSet[]) => void;
+  addExerciseToDraft: (exerciseId: string, prefill: DraftSet[], grip?: string) => void;
+  /** Change an exercise's grip. `retarget` moves untouched prefilled sets from the old target to the new one. */
+  setGrip: (
+    exIndex: number,
+    grip: string | undefined,
+    retarget?: { fromKg: number; fromReps: number; toKg: number; toReps: number },
+  ) => void;
   removeExerciseFromDraft: (index: number) => void;
   addSet: (exIndex: number) => void;
   updateSet: (
@@ -76,7 +112,16 @@ type Actions = {
   logWeight: (kg: number, day?: string) => void;
   logNutrition: (n: Omit<NutritionDay, "day">, day?: string) => void;
   addNutrition: (delta: Omit<NutritionDay, "day">, day?: string) => void;
-  toggleReaction: (feedId: string, code: ReactionCode) => void;
+  toggleLike: (feedId: string) => void;
+  /** Double-tap: likes, never unlikes. Returns true if it added a like. */
+  like: (feedId: string) => boolean;
+  addComment: (feedId: string, text: string, parentId?: string | null) => void;
+  deleteComment: (commentId: string) => void;
+  setAccount: (a: Account | null) => void;
+  /** Replace friends and their workouts with what the group has now (your own data is untouched). */
+  applyGroupData: (d: { friends: Friend[]; workouts: Workout[]; exercises: Exercise[]; groupName: string }) => void;
+  /** Mark uploads/deletes as done. */
+  synced: (done: { upserts?: string[]; deletes?: string[] }) => void;
   editWorkout: (id: string) => boolean;
   deleteWorkout: (id: string) => void;
   resetAll: () => void;
@@ -87,22 +132,31 @@ export const useStore = create<State & Actions>()(
     (set, get) => ({
       ...initialState(),
 
-      completeOnboarding: (p, startWeightKg, withSampleHistory) => {
+      // A real profile starts blank: no made-up friends or their workouts. withDemo keeps the demo
+      // friends and adds 4 weeks of sample history for trying the app out.
+      completeOnboarding: (p, startWeightKg, withDemo) => {
         const me: Profile = {
           ...p,
           id: "me",
           onboardedAt: new Date().toISOString(),
         };
-        const extra = withSampleHistory
+        const extra = withDemo
           ? generateHistory("me", p.sessionsPerWeek, 4, new Date(), 7)
           : [];
         set((s) => ({
           me,
+          friends: withDemo ? s.friends : [],
+          reactions: withDemo ? s.reactions : {},
+          likes: withDemo ? s.likes : {},
+          comments: withDemo ? s.comments : [],
           weights: [
             ...s.weights.filter((w) => w.day !== today()),
             { day: today(), kg: startWeightKg },
           ],
-          workouts: [...s.workouts, ...extra],
+          workouts: [
+            ...(withDemo ? s.workouts : s.workouts.filter((w) => w.userId === "me")),
+            ...extra,
+          ],
         }));
       },
 
@@ -121,7 +175,7 @@ export const useStore = create<State & Actions>()(
       },
       discardDraft: () => set({ draft: null }),
 
-      addExerciseToDraft: (exerciseId, prefill) =>
+      addExerciseToDraft: (exerciseId, prefill, grip) =>
         set((s) =>
           s.draft
             ? {
@@ -131,6 +185,7 @@ export const useStore = create<State & Actions>()(
                     ...s.draft.exercises,
                     {
                       exerciseId,
+                      ...(grip ? { grip } : {}),
                       sets: (prefill.length
                         ? prefill
                         : [
@@ -152,6 +207,19 @@ export const useStore = create<State & Actions>()(
               }
             : {},
         ),
+      setGrip: (exIndex, grip, retarget) =>
+        mutateDraft(set, (d) => {
+          const e = d.exercises[exIndex];
+          if (!e) return;
+          if (grip) e.grip = grip;
+          else delete e.grip;
+          if (!retarget) return;
+          for (const x of e.sets)
+            if (!x.done && x.type !== "warmup" && x.kg === retarget.fromKg && x.reps === retarget.fromReps) {
+              x.kg = retarget.toKg;
+              x.reps = retarget.toReps;
+            }
+        }),
       removeExerciseFromDraft: (index) =>
         mutateDraft(set, (d) => d.exercises.splice(index, 1)),
       addSet: (exIndex) =>
@@ -232,6 +300,7 @@ export const useStore = create<State & Actions>()(
         const exercises = d.exercises
           .map((e) => ({
             exerciseId: e.exerciseId,
+            ...(e.grip ? { grip: e.grip } : {}),
             sets: e.sets
               .filter((x) => x.done && x.reps > 0)
               .map(({ kg, reps, rir, type }) => ({ kg, reps, rir, type })),
@@ -252,6 +321,7 @@ export const useStore = create<State & Actions>()(
             ? s.workouts.map((x) => (x.id === w.id ? w : x))
             : [...s.workouts, w],
           draft: null,
+          syncQueue: queue(s.syncQueue, { upsert: w.id }),
         }));
         return w.id;
       },
@@ -289,15 +359,32 @@ export const useStore = create<State & Actions>()(
           ].sort((a, b) => a.day.localeCompare(b.day)),
         })),
 
-      toggleReaction: (feedId, code) =>
+      toggleLike: (feedId) =>
         set((s) => {
-          const item = { ...(s.reactions[feedId] ?? {}) };
-          const users = item[code] ?? [];
-          item[code] = users.includes("me")
-            ? users.filter((u) => u !== "me")
-            : [...users, "me"];
-          return { reactions: { ...s.reactions, [feedId]: item } };
+          const users = s.likes[feedId] ?? [];
+          return {
+            likes: {
+              ...s.likes,
+              [feedId]: users.includes("me") ? users.filter((u) => u !== "me") : [...users, "me"],
+            },
+          };
         }),
+      like: (feedId) => {
+        const users = get().likes[feedId] ?? [];
+        if (users.includes("me")) return false;
+        set((s) => ({ likes: { ...s.likes, [feedId]: [...users, "me"] } }));
+        return true;
+      },
+      addComment: (feedId, text, parentId = null) => {
+        const t = text.trim().slice(0, 500);
+        if (!t) return;
+        const c: Comment = { id: uid(), itemId: feedId, userId: "me", text: t, at: new Date().toISOString(), parentId };
+        set((s) => ({ comments: [...s.comments, c] }));
+      },
+      deleteComment: (commentId) =>
+        set((s) => ({
+          comments: s.comments.filter((c) => c.id !== commentId && c.parentId !== commentId),
+        })),
 
       editWorkout: (id) => {
         const w = get().workouts.find((x) => x.id === id && x.userId === "me");
@@ -315,6 +402,7 @@ export const useStore = create<State & Actions>()(
             },
             exercises: w.exercises.map((e) => ({
               exerciseId: e.exerciseId,
+              ...(e.grip ? { grip: e.grip } : {}),
               sets: e.sets.map((x) => ({ ...x, done: true })),
             })),
           },
@@ -324,12 +412,38 @@ export const useStore = create<State & Actions>()(
 
       deleteWorkout: (id) =>
         set((s) => ({
+          syncQueue: s.workouts.some((w) => w.id === id && w.userId === "me")
+            ? queue(s.syncQueue, { remove: id })
+            : s.syncQueue,
           workouts: s.workouts.filter(
             (w) => !(w.id === id && w.userId === "me"),
           ),
           reactions: Object.fromEntries(
             Object.entries(s.reactions).filter(([k]) => !k.includes(id)),
           ),
+          likes: Object.fromEntries(Object.entries(s.likes).filter(([k]) => !k.includes(id))),
+          comments: s.comments.filter((c) => !c.itemId.includes(id)),
+        })),
+
+      setAccount: (account) => set({ account }),
+
+      applyGroupData: ({ friends, workouts, exercises, groupName }) =>
+        set((s) => {
+          const mine = new Set(s.customExercises.map((e) => e.id));
+          return {
+            friends,
+            groupName,
+            workouts: [...s.workouts.filter((w) => w.userId === "me"), ...workouts],
+            customExercises: [...s.customExercises, ...exercises.filter((e) => !mine.has(e.id))],
+          };
+        }),
+
+      synced: ({ upserts = [], deletes = [] }) =>
+        set((s) => ({
+          syncQueue: {
+            upserts: s.syncQueue.upserts.filter((id) => !upserts.includes(id)),
+            deletes: s.syncQueue.deletes.filter((id) => !deletes.includes(id)),
+          },
         })),
 
       resetAll: () => set(initialState()),
@@ -338,15 +452,18 @@ export const useStore = create<State & Actions>()(
       name: "gripit",
       version: STORE_VERSION,
       storage: createJSONStorage(() => localStorage),
-      migrate: (persisted, fromVersion) => {
-        // Add a step here for every STORE_VERSION bump, e.g.
-        // if (fromVersion < 2) persisted = { ...persisted, newField: default };
-        void fromVersion;
-        return persisted as State;
-      },
+      // Add a step to migrate() above for every STORE_VERSION bump.
+      migrate,
     },
   ),
 );
+
+/** Adds an upload (or a delete, which cancels a pending upload) to the sync queue. */
+function queue(q: State["syncQueue"], op: { upsert?: string; remove?: string }): State["syncQueue"] {
+  if (op.upsert) return { upserts: [...q.upserts.filter((x) => x !== op.upsert), op.upsert], deletes: q.deletes.filter((x) => x !== op.upsert) };
+  if (op.remove) return { upserts: q.upserts.filter((x) => x !== op.remove), deletes: [...q.deletes.filter((x) => x !== op.remove), op.remove] };
+  return q;
+}
 
 /** Default rest between sets: longer for heavy strength work. */
 export function restFor(goal: string | undefined) {

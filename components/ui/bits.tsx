@@ -1,10 +1,9 @@
 "use client";
 
-import { BookOpen, ExternalLink, ShieldCheck } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useId, useState, type ReactNode } from "react";
-import { citations, type Citation } from "@/lib/science/citations";
 import { CountUp } from "./motion";
-import { Sheet } from "./sheet";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <section className={`card rounded-lg p-4 ${className}`}>{children}</section>;
@@ -19,23 +18,47 @@ export function SectionTitle({ children, action }: { children: ReactNode; action
   );
 }
 
-export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
+/**
+ * Page title with an optional back link for drill-in screens. Installed on the home screen there's no
+ * browser back button, so `back` gives one: it goes back in history, or to `back` if there's none.
+ */
+export function PageHeader({
+  title,
+  subtitle,
+  action,
+  back,
+}: {
+  title: string;
+  subtitle?: string;
+  action?: ReactNode;
+  back?: string;
+}) {
+  const router = useRouter();
   return (
     <header className="pt-safe">
+      {back && (
+        <button
+          type="button"
+          onClick={() => (history.length > 1 ? router.back() : router.push(back))}
+          className="-ml-2 mt-2 -mb-3 flex min-h-11 items-center gap-0.5 pr-3 text-base text-accent"
+        >
+          <ChevronLeft aria-hidden className="size-5" /> Back
+        </button>
+      )}
       <div className="flex items-end gap-3 pt-5 pb-4">
         <div className="flex-1">
           {/* Masked word reveal: each word slides up from behind its own clip. */}
           <h1 className="font-display text-display font-bold uppercase leading-none" aria-label={title}>
             {title.split(" ").map((w, i) => (
               <span key={i} aria-hidden className="mr-[0.22em] inline-block overflow-hidden pb-[0.06em] align-bottom last:mr-0">
-                <span className="text-brand inline-block motion-safe:animate-word" style={{ animationDelay: `${i * 90}ms` }}>
+                <span className="text-brand inline-block motion-safe:animate-word" style={{ animationDelay: `${i * 50}ms` }}>
                   {w}
                 </span>
               </span>
             ))}
           </h1>
           {subtitle && (
-            <p className="mt-1 text-sm text-muted motion-safe:animate-enter" style={{ animationDelay: "220ms" }}>
+            <p className="mt-1 text-sm text-muted motion-safe:animate-enter" style={{ animationDelay: "120ms" }}>
               {subtitle}
             </p>
           )}
@@ -127,61 +150,6 @@ export function ProgressRing({
       <span className="text-xs font-medium text-muted">
         {label} {met && <span className="text-success">· hit</span>}
       </span>
-    </div>
-  );
-}
-
-const STRENGTH_LABEL = {
-  strong: "Strong evidence",
-  moderate: "Moderate evidence",
-  practitioner: "Coaching guideline (lower-quality evidence)",
-} as const;
-
-export function CitationChip({ citationKey }: { citationKey: string }) {
-  const [open, setOpen] = useState(false);
-  const c: Citation | undefined = citations[citationKey];
-  if (!c) return null;
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 text-sm text-accent"
-      >
-        <BookOpen aria-hidden className="size-4" />
-        {c.shortRef}
-      </button>
-      <Sheet open={open} onClose={() => setOpen(false)} title={c.shortRef}>
-        <div className="flex flex-col gap-3">
-          <p className="text-base">{c.finding}</p>
-          <div className="rounded-md bg-surface-raised p-3 text-sm">
-            <p className="font-medium">{c.title}</p>
-            <p className="mt-1 text-muted">
-              {c.authors} · {c.year}
-            </p>
-          </div>
-          <p className="flex items-center gap-2 text-sm text-muted">
-            <ShieldCheck aria-hidden className="size-4" />
-            {STRENGTH_LABEL[c.strength]}
-            {c.verified ? " · DOI checked" : ""}
-          </p>
-          {c.doiUrl && (
-            <a href={c.doiUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm text-accent underline">
-              Read the paper <ExternalLink aria-hidden className="size-4" />
-            </a>
-          )}
-        </div>
-      </Sheet>
-    </>
-  );
-}
-
-export function Citations({ keys }: { keys: string[] }) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {[...new Set(keys)].map((k) => (
-        <CitationChip key={k} citationKey={k} />
-      ))}
     </div>
   );
 }

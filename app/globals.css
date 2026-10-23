@@ -26,6 +26,16 @@
   --color-rank-silver: #d2d0dc;
   --color-rank-bronze: #f0a070;
   --color-focus: #b79cff;
+  /* Muscle figure only (graphics, never text): the glowing red of a worked muscle. */
+  --color-muscle: #ff3b52;
+  --color-muscle-hot: #ff8f86;
+  --color-muscle-deep: #7d0b22;
+  /* Muscle heat (graphics only): how hard a muscle was worked, light to very hard.
+     Each step is ~1.5:1 brighter than the last so the levels stay distinguishable. */
+  --color-heat-1: #73283a;
+  --color-heat-2: #b0293f;
+  --color-heat-3: #ee3a50;
+  --color-heat-4: #ff7385;
 
   /* Diffusion: soft coloured glows instead of hard drop shadows. */
   --shadow-glow: 0 10px 32px -8px rgb(183 156 255 / 0.55), 0 2px 10px -2px rgb(229 139 255 / 0.35);
@@ -62,13 +72,14 @@
   --animate-pop: pop 420ms var(--ease-spring) both;
   --animate-rise: rise 200ms var(--ease-standard) both;
   --animate-tick: tick 320ms var(--ease-spring) both;
-  --animate-enter: enter 900ms var(--ease-expo) both;
-  --animate-word: word-up 1000ms var(--ease-expo) both;
+  --animate-enter: enter 480ms var(--ease-expo) both;
+  --animate-word: word-up 600ms var(--ease-expo) both;
   --animate-grow: grow 700ms var(--ease-spring) both;
   --animate-drop: drop 650ms var(--ease-spring) both;
   --animate-bump: bump 380ms var(--ease-spring);
   --animate-sweep: sweep 700ms var(--ease-standard) both;
   --animate-float-up: float-up 800ms var(--ease-standard) forwards;
+  --animate-heart: heart 850ms var(--ease-standard) forwards;
 
   @keyframes pop {
     0% { transform: scale(0.6); opacity: 0; }
@@ -80,7 +91,7 @@
     100% { transform: scale(1); }
   }
   @keyframes enter {
-    0% { opacity: 0; translate: 0 28px; }
+    0% { opacity: 0; translate: 0 16px; }
     100% { opacity: 1; translate: 0 0; }
   }
   @keyframes word-up {
@@ -107,6 +118,15 @@
   @keyframes float-up {
     0% { opacity: 1; transform: translate(0, 0) scale(0.8); }
     100% { opacity: 0; transform: translate(var(--dx, 0px), -64px) scale(1.25); }
+  }
+  /* Double-tap like: the heart springs in, holds, then floats off. Uses scale so it composes with translate. */
+  @keyframes heart {
+    0% { opacity: 0; scale: 0.2; }
+    18% { opacity: 1; scale: 1.15; }
+    32% { scale: 0.95; }
+    45% { scale: 1; }
+    75% { opacity: 1; scale: 1; }
+    100% { opacity: 0; scale: 1.25; }
   }
   @keyframes grow-x {
     0% { transform: scaleX(0); }
@@ -298,34 +318,40 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Children rise in one after another (page enter). */
-.stagger > * {
-  animation: var(--animate-enter);
+/* Muscle figure: the glow under worked muscles breathes slowly. */
+.muscle-pulse {
+  animation: muscle-pulse 2.8s ease-in-out infinite;
 }
-.stagger > *:nth-child(1) { animation-delay: 80ms; }
-.stagger > *:nth-child(2) { animation-delay: 160ms; }
-.stagger > *:nth-child(3) { animation-delay: 240ms; }
-.stagger > *:nth-child(4) { animation-delay: 320ms; }
-.stagger > *:nth-child(5) { animation-delay: 400ms; }
-.stagger > *:nth-child(6) { animation-delay: 460ms; }
-.stagger > *:nth-child(7) { animation-delay: 520ms; }
-.stagger > *:nth-child(n + 8) { animation-delay: 560ms; }
+@keyframes muscle-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
 
-/* Scroll-driven depth: cards grow into place as they enter and recede as they leave the top.
-   Uses scale/filter so it composes with the translate/opacity entrance above. */
+/* Children rise in one after another (page enter). Quick, so content never trails the page transition. */
+.stagger > * {
+  animation: enter 480ms var(--ease-expo) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 30ms; }
+.stagger > *:nth-child(2) { animation-delay: 70ms; }
+.stagger > *:nth-child(3) { animation-delay: 110ms; }
+.stagger > *:nth-child(4) { animation-delay: 150ms; }
+.stagger > *:nth-child(n + 5) { animation-delay: 180ms; }
+
+/* Scroll-driven depth: cards ease into place as they enter and recede as they leave the top.
+   Scale only: filters on every card during scroll are expensive on iPhone. */
 @supports (animation-timeline: view()) {
   .stagger > * {
     animation:
-      enter 900ms var(--ease-expo) both,
+      enter 480ms var(--ease-expo) both,
       depth linear both;
     animation-timeline: auto, view();
     animation-range: normal, cover 0% cover 100%;
   }
   @keyframes depth {
-    0% { scale: 0.9; filter: brightness(0.6); }
-    18% { scale: 1; filter: brightness(1); }
-    82% { scale: 1; filter: brightness(1); }
-    100% { scale: 0.92; filter: brightness(0.55) blur(1px); }
+    0% { scale: 0.94; }
+    15% { scale: 1; }
+    85% { scale: 1; }
+    100% { scale: 0.96; }
   }
 }
 
@@ -347,20 +373,25 @@
   animation: none;
   z-index: 50;
 }
-::view-transition-old(.tab-forward) { animation: 260ms var(--ease-expo) both vt-fade-out, 520ms var(--ease-expo) both vt-out-left; }
-::view-transition-new(.tab-forward) { animation: 520ms var(--ease-expo) 80ms both vt-fade-in, 620ms var(--ease-expo) both vt-in-right; }
-::view-transition-old(.tab-back) { animation: 260ms var(--ease-expo) both vt-fade-out, 520ms var(--ease-expo) both vt-out-right; }
-::view-transition-new(.tab-back) { animation: 520ms var(--ease-expo) 80ms both vt-fade-in, 620ms var(--ease-expo) both vt-in-left; }
-::view-transition-old(.drill-in) { animation: 300ms var(--ease-expo) both vt-fade-out, 600ms var(--ease-expo) both vt-shrink; }
-::view-transition-new(.drill-in) { animation: 600ms var(--ease-expo) 60ms both vt-fade-in, 700ms var(--ease-expo) both vt-rise-big; }
+/* Kept short and cheap (opacity + translate only, no blur) so the old screen is gone before the new one
+   settles: long overlapping slides read as lag on iPhone. The old page fades fast and doesn't move. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+::view-transition-old(.tab-forward),
+::view-transition-old(.tab-back),
+::view-transition-old(.drill-in) { animation: 120ms ease-out both vt-fade-out; }
+::view-transition-new(.tab-forward) { animation: 240ms var(--ease-expo) both vt-fade-in, 300ms var(--ease-expo) both vt-in-right; }
+::view-transition-new(.tab-back) { animation: 240ms var(--ease-expo) both vt-fade-in, 300ms var(--ease-expo) both vt-in-left; }
+::view-transition-new(.drill-in) { animation: 260ms var(--ease-expo) both vt-fade-in, 340ms var(--ease-expo) both vt-rise; }
+/* Snap the group itself: no size/position morph between pages of different heights. */
+::view-transition-group(*) { animation-duration: 300ms; }
 @keyframes vt-fade-out { to { opacity: 0; } }
 @keyframes vt-fade-in { from { opacity: 0; } }
-@keyframes vt-out-left { to { translate: -48px 0; } }
-@keyframes vt-out-right { to { translate: 48px 0; } }
-@keyframes vt-in-right { from { translate: 64px 0; } }
-@keyframes vt-in-left { from { translate: -64px 0; } }
-@keyframes vt-shrink { to { scale: 0.94; filter: blur(4px); } }
-@keyframes vt-rise-big { from { translate: 0 40px; scale: 1.02; } }
+@keyframes vt-in-right { from { translate: 20px 0; } }
+@keyframes vt-in-left { from { translate: -20px 0; } }
+@keyframes vt-rise { from { translate: 0 16px; } }
 
 /* The ambient 3D plate. */
 @keyframes plate-turn {
