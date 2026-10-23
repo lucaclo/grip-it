@@ -112,4 +112,15 @@ describe("selectors", () => {
     expect(row.rank).toBe(1);
     expect(leaderboard(s, "volume").find((r) => r.userId === "f-priya")!.rank).toBeNull();
   });
+
+  // Feedback 2026-10-23: a chest day of push-ups and dips showed "0 kg" volume.
+  it("your own body-weight-only workout counts your latest weigh-in, not 0 kg", () => {
+    const x = w("b", "me", now.toISOString(), 0, 12);
+    x.exercises = [
+      { exerciseId: "push-up", sets: [{ kg: 0, reps: 12, rir: null, type: "normal" }] },
+      { exerciseId: "dip", sets: [{ kg: 10, reps: 8, rir: null, type: "normal" }] },
+    ];
+    const s = { ...state([x]), weights: [{ day: "2026-10-20", kg: 80 }, { day: "2026-10-21", kg: 76 }] };
+    expect(liftedKg(s, x)).toBe(76 * 12 + (76 + 10) * 8);
+  });
 });

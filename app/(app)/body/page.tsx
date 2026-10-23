@@ -46,21 +46,18 @@ export default function Body() {
       <div className="stagger flex flex-col gap-4">
         <Card>
           <SectionTitle>Weight</SectionTitle>
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
-              <NumberField label="Today" unit="kg" decimal step={0.1} value={kg} onChange={setKg} />
-            </div>
-            <Button
-              className="mb-0 min-h-12"
-              disabled={kg == null || kg < 30 || kg > 300}
-              onClick={() => {
-                s.logWeight(kg!);
-                flash("Weight saved");
-              }}
-            >
-              Save
-            </Button>
-          </div>
+          <NumberField label="Today" unit="kg" decimal step={0.1} value={kg} onChange={setKg} />
+          {/* Same pattern as food below: the field, then a full-width save under it. */}
+          <Button
+            className="mt-3 w-full"
+            disabled={kg == null || kg < 30 || kg > 300}
+            onClick={() => {
+              s.logWeight(kg!);
+              flash("Weight saved");
+            }}
+          >
+            Save weight
+          </Button>
           {data.length >= 2 ? (
             <>
               <dl className="mt-4 grid grid-cols-3 gap-2">

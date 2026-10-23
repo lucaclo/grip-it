@@ -72,7 +72,7 @@ export function NumberField({
           onFocus={(e) => e.currentTarget.select()}
           aria-invalid={!!error}
           aria-describedby={describedBy}
-          className={`tabular min-w-0 flex-1 bg-transparent py-2 text-lg outline-none ${step ? "text-center" : "px-3"}`}
+          className={`tabular w-0 min-w-0 flex-1 bg-transparent py-2 text-lg outline-none ${step ? "text-center" : "px-3"}`}
         />
         {unit && <span className="pr-3 text-sm text-subtle">{unit}</span>}
         {step && (
