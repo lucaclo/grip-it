@@ -23,7 +23,7 @@ export default function Entry() {
     <main className="grid min-h-dvh place-items-center">
       <div className="flex flex-col items-center gap-6">
         {hydrated && charlie ? <StarOfDavid size={150} /> : <Plate3D size={150} />}
-        <p className="text-brand font-display text-display font-bold uppercase motion-safe:animate-enter">Grip It</p>
+        <p className="font-display text-[2.375rem] font-bold tracking-[-0.01em] motion-safe:animate-enter">Grip It</p>
       </div>
     </main>
   );

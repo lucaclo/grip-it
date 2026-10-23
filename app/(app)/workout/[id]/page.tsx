@@ -59,7 +59,7 @@ export default function WorkoutSummary() {
         <section className="mb-4 rounded-xl bg-gradient-to-br from-pr via-[#ffb38a] to-accent-2 p-4 text-on-pr shadow-[0_14px_40px_-12px_rgb(255_200_87/0.6)] motion-safe:animate-pop" role="status">
           <div className="flex items-center gap-2">
             <Trophy aria-hidden className="size-6" />
-            <p className="font-display text-xl font-bold uppercase">
+            <p className="font-display text-[1.75rem] font-bold tracking-[-0.01em]">
               {prs.length} new PR{prs.length > 1 ? "s" : ""}!
             </p>
           </div>

@@ -12,7 +12,7 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
 export function SectionTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
     <div className="mb-3 flex items-center justify-between gap-2">
-      <h2 className="font-display text-lg font-semibold uppercase tracking-wide">{children}</h2>
+      <h2 className="text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-muted">{children}</h2>
       {action}
     </div>
   );
@@ -24,11 +24,14 @@ export function SectionTitle({ children, action }: { children: ReactNode; action
  */
 export function PageHeader({
   title,
+  eyebrow,
   subtitle,
   action,
   back,
 }: {
   title: string;
+  /** Small line above the title (a date, a group name). */
+  eyebrow?: string;
   subtitle?: string;
   action?: ReactNode;
   back?: string;
@@ -45,10 +48,11 @@ export function PageHeader({
           <ChevronLeft aria-hidden className="size-5" /> Back
         </button>
       )}
-      <div className="flex items-end gap-3 pt-5 pb-4">
+      <div className="flex items-end gap-3 pt-6 pb-5">
         <div className="flex-1">
+          {eyebrow && <p className="mb-1.5 text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-subtle">{eyebrow}</p>}
           {/* Masked word reveal: each word slides up from behind its own clip. */}
-          <h1 className="font-display text-display font-bold uppercase leading-none" aria-label={title}>
+          <h1 className="font-display text-[2.375rem] font-bold leading-none tracking-[-0.01em]" aria-label={title}>
             {title.split(" ").map((w, i) => (
               <span key={i} aria-hidden className="mr-[0.22em] inline-block overflow-hidden pb-[0.06em] align-bottom last:mr-0">
                 <span className="text-brand inline-block motion-safe:animate-word" style={{ animationDelay: `${i * 50}ms` }}>
@@ -58,7 +62,7 @@ export function PageHeader({
             ))}
           </h1>
           {subtitle && (
-            <p className="mt-1 text-sm text-muted motion-safe:animate-enter" style={{ animationDelay: "120ms" }}>
+            <p className="mt-1.5 text-sm text-muted motion-safe:animate-enter" style={{ animationDelay: "120ms" }}>
               {subtitle}
             </p>
           )}
@@ -85,7 +89,7 @@ export function EmptyState({
       <div className="mb-1 text-subtle" aria-hidden>
         {icon}
       </div>
-      <p className="font-display text-lg font-semibold">{title}</p>
+      <p className="text-base font-semibold">{title}</p>
       <p className="max-w-xs text-sm text-muted">{body}</p>
       {action && <div className="mt-3">{action}</div>}
     </div>
@@ -112,28 +116,28 @@ export function ProgressRing({
     const id = requestAnimationFrame(() => setShown(true));
     return () => cancelAnimationFrame(id);
   }, []);
-  const r = size / 2 - 7;
+  const r = size / 2 - 4;
   const c = 2 * Math.PI * r;
   const met = pct >= 1;
   const stroke = met ? "var(--color-success)" : `url(#${gid})`;
   return (
     <div className="flex flex-col items-center gap-1" role="img" aria-label={`${label}: ${value} of ${target} ${unit}`}>
       <div className="relative" style={{ width: size, height: size }}>
-        <svg width={size} height={size} className="-rotate-90 drop-shadow-[0_0_10px_rgb(183_156_255/0.35)]" aria-hidden>
+        <svg width={size} height={size} className="-rotate-90" aria-hidden>
           <defs>
             <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="var(--color-accent)" />
               <stop offset="100%" stopColor="var(--color-accent-2)" />
             </linearGradient>
           </defs>
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-surface-raised)" strokeWidth={7} />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgb(255 255 255 / 0.07)" strokeWidth={5} />
           <circle
             cx={size / 2}
             cy={size / 2}
             r={r}
             fill="none"
             stroke={stroke}
-            strokeWidth={7}
+            strokeWidth={5}
             strokeLinecap="round"
             strokeDasharray={c}
             strokeDashoffset={shown ? c * (1 - Math.min(pct, 1)) : c}
@@ -154,11 +158,57 @@ export function ProgressRing({
   );
 }
 
+/**
+ * Slim horizontal meter: label and value on one line, a 6px bar under it. Fills on mount.
+ * Turns success-green when the target is met; `tone` picks the fill colour otherwise.
+ */
+export function Meter({
+  label,
+  value,
+  target,
+  unit,
+  tone = "accent",
+  delay = 0,
+}: {
+  label: ReactNode;
+  value: number;
+  target: number;
+  unit?: string;
+  tone?: "accent" | "volt" | "warning";
+  delay?: number;
+}) {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  const pct = target > 0 ? Math.min(1, Math.max(0, value / target)) : 0;
+  const met = target > 0 && value >= target;
+  const fill = met ? "bg-success" : tone === "volt" ? "bg-volt" : tone === "warning" ? "bg-warning" : "bg-accent";
+  return (
+    <div role="img" aria-label={`${typeof label === "string" ? label : ""}: ${Math.round(value)} of ${Math.round(target)}${unit ? ` ${unit}` : ""}`}>
+      <div className="flex items-baseline justify-between gap-3" aria-hidden>
+        <span className="text-sm text-text">{label}</span>
+        <span className="tabular text-sm text-muted">
+          <span className={`text-base font-semibold ${met ? "text-success" : "text-text"}`}>{Math.round(value).toLocaleString("en-GB")}</span>
+          <span className="text-subtle"> / {Math.round(target).toLocaleString("en-GB")}{unit ? ` ${unit}` : ""}</span>
+        </span>
+      </div>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.07]" aria-hidden>
+        <div
+          className={`h-full origin-left rounded-full ${fill} transition-transform duration-[1100ms] ease-[var(--ease-expo)]`}
+          style={{ transform: `scaleX(${shown ? pct : 0})`, transitionDelay: `${delay}ms` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function Avatar({ name, you }: { name: string; you?: boolean }) {
   return (
     <span
       aria-hidden
-      className={`grid size-10 shrink-0 place-items-center rounded-full font-display text-lg font-semibold ${you ? "bg-brand text-on-accent shadow-glow" : "bg-surface-raised text-text ring-1 ring-border"}`}
+      className={`grid size-10 shrink-0 place-items-center rounded-full font-display text-lg font-semibold ${you ? "bg-accent/15 text-accent ring-1 ring-accent/35" : "bg-surface-raised text-text ring-1 ring-border"}`}
     >
       {name.slice(0, 1).toUpperCase()}
     </span>

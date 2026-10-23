@@ -123,7 +123,7 @@ export default function Onboarding() {
       {step === 0 && (
         <section className="flex flex-1 flex-col gap-4 pt-6">
           <div>
-            <h1 className="text-brand font-display text-display font-bold uppercase leading-none">About you</h1>
+            <h1 className="font-display text-[2.375rem] font-bold leading-none tracking-[-0.01em]">About you</h1>
             <p className="mt-2 text-muted">We use this to set your calorie and protein targets.</p>
           </div>
           <TextField label="Display name" value={name} onChange={setName} placeholder="What your friends call you" error={show(errors.name)} />
@@ -160,7 +160,7 @@ export default function Onboarding() {
       {step === 1 && (
         <section className="flex flex-1 flex-col gap-5 pt-6">
           <div>
-            <h1 className="text-brand font-display text-display font-bold uppercase leading-none">Your goal</h1>
+            <h1 className="font-display text-[2.375rem] font-bold leading-none tracking-[-0.01em]">Your goal</h1>
             <p className="mt-2 text-muted">You can switch any time in settings.</p>
           </div>
           <button
@@ -219,7 +219,7 @@ export default function Onboarding() {
       {step === 2 && plan && (
         <section className="flex flex-1 flex-col gap-4 pt-6">
           <div>
-            <h1 className="text-brand font-display text-display font-bold uppercase leading-none">Your plan</h1>
+            <h1 className="font-display text-[2.375rem] font-bold leading-none tracking-[-0.01em]">Your plan</h1>
             <p className="mt-2 flex items-center gap-1 text-muted">
               Based on published research.
               <InfoButton title="Where your plan comes from" label="Where your plan comes from" keys={plan.citationKeys}>
@@ -320,7 +320,7 @@ function Welcome({ onStart }: { onStart: () => void }) {
           {WELCOME_WORDS.map((w, i) => (
             <span key={i} aria-hidden className="mr-[0.22em] inline-block overflow-hidden pb-[0.06em] align-bottom">
               <span
-                className={`inline-block motion-safe:animate-word ${i >= 2 ? "text-brand" : ""}`}
+                className={`inline-block motion-safe:animate-word ${i >= 2 ? "text-accent" : ""}`}
                 style={{ animationDelay: `${300 + i * 110}ms` }}
               >
                 {w}

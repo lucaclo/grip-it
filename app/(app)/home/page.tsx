@@ -1,12 +1,12 @@
 "use client";
 
-import { ChevronRight, Flame, Scale, Trophy } from "lucide-react";
+import { ChevronRight, Flame, Plus, Scale, Trophy } from "lucide-react";
 import { BarbellIcon } from "@/components/icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { Card, PageHeader, ProgressRing, SectionTitle } from "@/components/ui/bits";
+import { Card, Meter, PageHeader, SectionTitle } from "@/components/ui/bits";
 import { CountUp } from "@/components/ui/motion";
 import { leaderboard, myTargets, streakOf, weekStart, weeklyHardSets, weeklyVolume } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
@@ -52,7 +52,10 @@ export default function Home() {
 
   return (
     <>
-      <PageHeader title={`${greeting}, ${me.name}`} subtitle={new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} />
+      <PageHeader
+        eyebrow={new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
+        title={`${greeting}, ${me.name}`}
+      />
 
       <div className="stagger flex flex-col gap-4">
         {s.draft ? (
@@ -73,68 +76,78 @@ export default function Home() {
         )}
 
         <Link href="/compete" transitionTypes={["tab-forward"]}
-          className="card-hero shine shine-soft press relative overflow-hidden rounded-xl p-5" aria-label={`This week: rank ${myRow?.rank ?? "none"}, ${streak}-week streak, ${hard} hard sets`}>
-          <p className="text-xs font-semibold uppercase tracking-widest text-text">This week</p>
-          <div className="mt-1 flex items-end gap-2">
-            {myRow?.rank ? <CountUp value={myRow.rank} prefix="#" className="num-hero text-[4.5rem] leading-none" /> : <span className="num-hero text-[4.5rem] leading-none">—</span>}
-            <span className="mb-2.5 text-sm text-text">in {s.groupName}</span>
+          className="card-hero press relative overflow-hidden rounded-xl p-5" aria-label={`This week: rank ${myRow?.rank ?? "none"}, ${streak}-week streak, ${hard} hard sets`}>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-muted">This week</p>
+              <div className="mt-2 flex items-baseline gap-2">
+                {myRow?.rank ? <CountUp value={myRow.rank} prefix="#" className="num-hero text-[3.75rem] leading-[0.85]" /> : <span className="num-hero text-[3.75rem] leading-[0.85]">—</span>}
+              </div>
+              <p className="mt-2 text-sm text-muted">in {s.groupName}</p>
+            </div>
+            <GoalRing done={sessionsThisWeek} goal={me.sessionsPerWeek} />
           </div>
-          <ol className="mt-4 flex justify-between" aria-label="Training days this week">
+
+          <ol className="mt-5 grid grid-cols-7 gap-1.5" aria-label="Training days this week">
             {week.map((d, i) => (
               <li
                 key={d.key}
-                style={{ animationDelay: `${250 + i * 55}ms` }}
-                className="flex flex-col items-center gap-1 motion-safe:animate-pop" aria-label={`${d.name}: ${d.trained ? "trained" : d.future ? "to come" : "rest"}`}>
+                style={{ animationDelay: `${200 + i * 40}ms` }}
+                className="flex flex-col items-center gap-1.5 motion-safe:animate-enter" aria-label={`${d.name}: ${d.trained ? "trained" : d.future ? "to come" : "rest"}`}>
                 <span
-                  className={`grid size-9 place-items-center rounded-full text-sm font-semibold ${
+                  className={`grid h-8 w-full place-items-center rounded-[10px] ${
                     d.trained
-                      ? "bg-volt text-on-volt shadow-glow-volt"
+                      ? "bg-volt text-on-volt"
                       : d.today
-                        ? "border-2 border-dashed border-text/70 text-text"
+                        ? "ring-1 ring-inset ring-text/60"
                         : d.future
-                          ? "border border-white/20 text-text"
-                          : "bg-black/25 text-text/80"
+                          ? "ring-1 ring-inset ring-white/[0.08]"
+                          : "bg-white/[0.04]"
                   }`}
                   aria-hidden
                 >
-                  {d.trained ? <BarbellIcon className="size-5" strokeWidth={2.2} /> : <span className={`size-1.5 rounded-full ${d.today ? "bg-text" : "bg-text/40"}`} />}
+                  {d.trained ? <BarbellIcon className="size-[1.125rem]" strokeWidth={2.2} /> : d.today ? <span className="size-1.5 rounded-full bg-text" /> : null}
                 </span>
-                <span aria-hidden className={`text-[0.6875rem] ${d.today ? "font-semibold text-text" : "text-text"}`}>
+                <span aria-hidden className={`text-[0.6875rem] ${d.today ? "font-semibold text-text" : "text-subtle"}`}>
                   {d.letter}
                 </span>
               </li>
             ))}
           </ol>
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <div className="rounded-md bg-black/25 p-3 backdrop-blur-sm">
-              <Flame aria-hidden className="size-5 text-volt" />
-              <CountUp value={streak} className="num-hero mt-1 block text-stat leading-none" />
-              <p className="text-xs text-text">week streak</p>
+
+          <dl className="mt-5 grid grid-cols-2 divide-x divide-white/[0.08] border-t border-white/[0.08] pt-4">
+            <div className="flex items-center gap-3 pr-4">
+              <Flame aria-hidden className="size-5 shrink-0 text-volt" />
+              <div>
+                <dd><CountUp value={streak} className="num-hero block text-[1.625rem] leading-none" /></dd>
+                <dt className="mt-1 text-xs text-muted">week streak</dt>
+              </div>
             </div>
-            <div className="rounded-md bg-black/25 p-3 backdrop-blur-sm">
-              <Trophy aria-hidden className="size-5 text-volt" />
-              <CountUp value={hard} className="num-hero mt-1 block text-stat leading-none" />
-              <p className="text-xs text-text">hard sets</p>
+            <div className="flex items-center gap-3 pl-4">
+              <Trophy aria-hidden className="size-5 shrink-0 text-volt" />
+              <div>
+                <dd><CountUp value={hard} className="num-hero block text-[1.625rem] leading-none" /></dd>
+                <dt className="mt-1 text-xs text-muted">hard sets</dt>
+              </div>
             </div>
-          </div>
-          <GoalRing done={sessionsThisWeek} goal={me.sessionsPerWeek} className="absolute top-5 right-5" />
+          </dl>
         </Link>
 
         <Card>
           <SectionTitle
             action={
-              <Link href="/body" transitionTypes={["drill-in"]} className="press flex min-h-11 items-center gap-1 text-sm text-accent">
-                Log <ChevronRight aria-hidden className="size-4" />
+              <Link href="/body" transitionTypes={["drill-in"]} className="press -my-3 flex min-h-11 items-center gap-0.5 text-sm text-accent">
+                Details <ChevronRight aria-hidden className="size-4" />
               </Link>
             }
           >
-            Today
+            Today&apos;s food
           </SectionTitle>
           {t ? (
             <>
-              <div className="flex justify-around">
-                <ProgressRing label="Calories" unit="kcal" value={n?.kcal ?? 0} target={t.kcal} />
-                <ProgressRing label="Protein" unit="g" value={n?.proteinG ?? 0} target={t.proteinG} />
+              <div className="flex flex-col gap-4">
+                <Meter label="Calories" unit="kcal" value={n?.kcal ?? 0} target={t.kcal} />
+                <Meter label="Protein" unit="g" value={n?.proteinG ?? 0} target={t.proteinG} delay={120} />
               </div>
               <QuickAdd />
             </>
@@ -146,7 +159,7 @@ export default function Home() {
         <Card>
           <SectionTitle
             action={
-              <Link href="/volume" transitionTypes={["drill-in"]} className="press flex min-h-11 items-center gap-1 text-sm text-accent">
+              <Link href="/volume" transitionTypes={["drill-in"]} className="press -my-3 flex min-h-11 items-center gap-0.5 text-sm text-accent">
                 All muscles <ChevronRight aria-hidden className="size-4" />
               </Link>
             }
@@ -154,18 +167,11 @@ export default function Home() {
             Needs work this week
           </SectionTitle>
           {needsWork.length ? (
-            <ul className="grid grid-cols-3 gap-2">
+            <ul className="flex flex-col gap-4">
               {needsWork.map(({ m, sets }, i) => (
                 <li key={m}>
-                  <Link
-                    href="/volume"
-                    transitionTypes={["drill-in"]}
-                    className="press flex flex-col items-center gap-1.5 rounded-md bg-surface-raised/60 px-2 py-3 text-center"
-                    aria-label={`${MUSCLE_LABEL[m]}: ${sets} of ${VOLUME_BAND.min} sets`}
-                  >
-                    <MiniRing pct={sets / VOLUME_BAND.min} delay={i * 120} label={String(sets)} />
-                    <span className="text-xs leading-tight text-text">{MUSCLE_LABEL[m]}</span>
-                    <span className="text-[0.6875rem] text-subtle">of {VOLUME_BAND.min} sets</span>
+                  <Link href="/volume" transitionTypes={["drill-in"]} className="press block" aria-label={`${MUSCLE_LABEL[m]}: ${sets} of ${VOLUME_BAND.min} sets`}>
+                    <Meter label={MUSCLE_LABEL[m]} unit="sets" value={sets} target={VOLUME_BAND.min} delay={i * 100} />
                   </Link>
                 </li>
               ))}
@@ -175,9 +181,11 @@ export default function Home() {
           )}
         </Card>
 
-        <Link href="/body" transitionTypes={["drill-in"]} className="press flex min-h-14 items-center gap-3 card rounded-lg px-4">
-          <Scale aria-hidden className="size-5 text-accent" />
-          <span className="flex-1">Body weight and nutrition</span>
+        <Link href="/body" transitionTypes={["drill-in"]} className="press card flex min-h-14 items-center gap-3 rounded-lg px-4">
+          <span className="grid size-8 place-items-center rounded-[9px] bg-accent/15">
+            <Scale aria-hidden className="size-[1.125rem] text-accent" />
+          </span>
+          <span className="flex-1 font-medium">Body weight and nutrition</span>
           <ChevronRight aria-hidden className="size-5 text-subtle" />
         </Link>
       </div>
@@ -192,55 +200,49 @@ function GoalRing({ done, goal, className = "" }: { done: number; goal: number; 
     const id = requestAnimationFrame(() => setShown(true));
     return () => cancelAnimationFrame(id);
   }, []);
-  const size = 104;
-  const r = 42;
+  const size = 88;
+  const r = 38;
   const c = 2 * Math.PI * r;
   const pct = Math.min(1, done / Math.max(1, goal));
   const met = done >= goal;
   return (
     <div className={className} role="img" aria-label={`${done} of ${goal} sessions this week${met ? ", goal met" : ""}`}>
       <div className={`relative ${met ? "motion-safe:animate-[breathe_3s_ease-in-out_infinite]" : ""}`} style={{ width: size, height: size }}>
-        <svg width={size} height={size} viewBox="0 0 104 104" className="-rotate-90" aria-hidden>
-          <defs>
-            <linearGradient id="goal-ring" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="var(--color-volt)" />
-              <stop offset="100%" stopColor="#9fd12a" />
-            </linearGradient>
-          </defs>
-          <circle cx="52" cy="52" r={r} fill="none" stroke="rgb(0 0 0 / 0.3)" strokeWidth="9" />
+        <svg width={size} height={size} viewBox="0 0 88 88" className="-rotate-90" aria-hidden>
+          <circle cx="44" cy="44" r={r} fill="none" stroke="rgb(255 255 255 / 0.08)" strokeWidth="6" />
           {/* one tick per planned session */}
           {Array.from({ length: goal }, (_, i) => (
             <line
               key={i}
-              x1="52"
-              y1="4"
-              x2="52"
-              y2="12"
-              stroke="rgb(255 255 255 / 0.35)"
+              x1="44"
+              y1="3"
+              x2="44"
+              y2="9"
+              stroke="var(--color-bg)"
               strokeWidth="2"
-              transform={`rotate(${(i / goal) * 360} 52 52)`}
+              transform={`rotate(${(i / goal) * 360} 44 44)`}
             />
           ))}
           <circle
-            cx="52"
-            cy="52"
+            cx="44"
+            cy="44"
             r={r}
             fill="none"
-            stroke="url(#goal-ring)"
-            strokeWidth="9"
+            stroke="var(--color-volt)"
+            strokeWidth="6"
             strokeLinecap="round"
             strokeDasharray={c}
             strokeDashoffset={shown ? c * (1 - pct) : c}
-            className="drop-shadow-[0_0_10px_rgb(212_255_58/0.55)] transition-[stroke-dashoffset] duration-[1400ms] ease-[var(--ease-expo)]"
+            className="transition-[stroke-dashoffset] duration-[1400ms] ease-[var(--ease-expo)]"
           />
         </svg>
         <div className="absolute inset-0 grid place-items-center text-center">
           <div>
-            <span className="num-hero text-3xl leading-none">
+            <span className="num-hero text-[1.625rem] leading-none">
               <CountUp value={done} />
-              <span className="text-lg text-text">/{goal}</span>
+              <span className="text-base text-subtle">/{goal}</span>
             </span>
-            <span className="block text-[0.6875rem] uppercase tracking-wider text-text">{met ? "goal hit" : "sessions"}</span>
+            <span className="mt-0.5 block text-[0.625rem] font-semibold uppercase tracking-[0.08em] text-muted">{met ? "goal hit" : "sessions"}</span>
           </div>
         </div>
       </div>
@@ -266,7 +268,7 @@ function QuickAdd() {
     return () => clearTimeout(t);
   }, [last]);
   return (
-    <div className="mt-4">
+    <div className="mt-5 border-t border-white/[0.06] pt-4">
       <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Quick add food">
         {QUICK.map((q) => (
           <button
@@ -278,9 +280,9 @@ function QuickAdd() {
               setTaps((n) => n + 1);
             }}
             aria-label={`Add ${q.label.toLowerCase()}: ${q.kcal} kcal, ${q.proteinG} g protein`}
-            className="press flex min-h-12 shrink-0 flex-col items-start justify-center rounded-md border border-border bg-surface-raised/70 px-3 text-left"
+            className="press flex min-h-12 shrink-0 flex-col items-start justify-center rounded-[12px] bg-white/[0.05] px-3.5 text-left ring-1 ring-inset ring-white/[0.06]"
           >
-            <span className="text-sm font-semibold">+ {q.label}</span>
+            <span className="flex items-center gap-1 text-sm font-semibold"><Plus aria-hidden className="size-3.5 text-accent" strokeWidth={2.6} />{q.label}</span>
             <span className="tabular text-xs text-subtle">
               {q.kcal} kcal · {q.proteinG} g
             </span>
@@ -309,36 +311,5 @@ function QuickAdd() {
         )}
       </div>
     </div>
-  );
-}
-
-function MiniRing({ pct, label, delay = 0 }: { pct: number; label: string; delay?: number }) {
-  const [shown, setShown] = useState(false);
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setShown(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
-  const r = 22;
-  const c = 2 * Math.PI * r;
-  return (
-    <span className="relative grid size-14 place-items-center" aria-hidden>
-      <svg viewBox="0 0 52 52" className="absolute inset-0 -rotate-90">
-        <circle cx="26" cy="26" r={r} fill="none" stroke="rgb(0 0 0 / 0.3)" strokeWidth="5" />
-        <circle
-          cx="26"
-          cy="26"
-          r={r}
-          fill="none"
-          stroke="var(--color-accent)"
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeDasharray={c}
-          strokeDashoffset={shown ? c * (1 - Math.min(1, pct)) : c}
-          className="transition-[stroke-dashoffset] duration-[1200ms] ease-[var(--ease-expo)]"
-          style={{ transitionDelay: `${delay}ms` }}
-        />
-      </svg>
-      <span className="num-hero text-lg">{label}</span>
-    </span>
   );
 }

@@ -6,14 +6,14 @@ type Size = "sm" | "md" | "lg";
 
 const VARIANT: Record<Variant, string> = {
   primary: "bg-brand text-on-accent font-semibold shadow-glow",
-  secondary: "bg-surface-raised/80 text-text border border-border",
+  secondary: "bg-white/[0.06] text-text font-medium ring-1 ring-inset ring-white/[0.06]",
   ghost: "bg-transparent text-muted",
   danger: "bg-danger text-on-danger font-semibold",
 };
 const SIZE: Record<Size, string> = {
   sm: "min-h-9 px-3 text-sm",
   md: "min-h-11 px-4 text-base",
-  lg: "min-h-13 px-5 text-base uppercase tracking-wide",
+  lg: "min-h-13 px-5 text-[1.0625rem] rounded-[14px]",
 };
 
 export function buttonClass(variant: Variant = "primary", size: Size = "md", extra = "") {

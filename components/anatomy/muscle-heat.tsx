@@ -52,7 +52,7 @@ export function MuscleHeat({
   return (
     <section className="card-hero rounded-xl p-4" aria-label={title}>
       <div className="mb-3 flex items-center justify-between gap-2">
-        <h2 className="font-display text-lg font-semibold uppercase tracking-wide">{title}</h2>
+        <h2 className="text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-muted">{title}</h2>
         <IntensityInfo scale={scale} />
       </div>
 

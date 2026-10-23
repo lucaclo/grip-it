@@ -53,7 +53,7 @@ export function InviteClient({ code, from }: { code: string; from?: string }) {
     <main className="mx-auto flex min-h-dvh max-w-[480px] flex-col gap-6 px-4 pt-safe pb-safe">
       <div className="flex flex-col items-center gap-4 pt-10 text-center">
         <Plate3D size={110} />
-        <h1 className="text-brand font-display text-display font-bold uppercase leading-none">
+        <h1 className="font-display text-[2.375rem] font-bold leading-none tracking-[-0.01em]">
           {from ? `${from} invited you` : "You're invited"}
         </h1>
         <p className="text-muted">Log your lifts and compete with friends on Grip It. Free, no sign-up.</p>
@@ -61,7 +61,7 @@ export function InviteClient({ code, from }: { code: string; from?: string }) {
 
       {ios ? (
         <section className="card rounded-lg p-4" aria-label="How to join">
-          <p className="mb-3 font-display text-lg font-semibold uppercase tracking-wide">Join in three taps</p>
+          <p className="mb-3 text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-muted">Join in three taps</p>
           <ol className="flex flex-col gap-3">
             <li className="flex items-center gap-3">
               <Step n={1} />

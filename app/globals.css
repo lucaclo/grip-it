@@ -3,25 +3,25 @@
 /* Grip It design tokens v2: from replica/design/tokens.json (contrast-checked, 0 AA failures).
    Components use roles only (bg-surface, text-muted, border-input), never raw hex. */
 @theme {
-  --color-bg: #16141f;
-  --color-surface: #211e2e;
-  --color-surface-raised: #2c2840;
-  --color-border: #3b3653;
-  --color-border-input: #7d7799;
-  --color-text: #f6f4fb;
-  --color-muted: #b9b4cc;
-  --color-subtle: #9a94b0;
+  --color-bg: #0e0d13;
+  --color-surface: #17161e;
+  --color-surface-raised: #211f2a;
+  --color-border: #2a2834;
+  --color-border-input: #6c6980;
+  --color-text: #f4f3f8;
+  --color-muted: #aeabbd;
+  --color-subtle: #8f8ca0;
   --color-accent: #b79cff;
   --color-accent-2: #e58bff;
-  --color-on-accent: #16141f;
+  --color-on-accent: #0e0d13;
   --color-volt: #d4ff3a;
-  --color-on-volt: #16141f;
+  --color-on-volt: #0e0d13;
   --color-danger: #ff6b7a;
-  --color-on-danger: #16141f;
+  --color-on-danger: #0e0d13;
   --color-success: #4be3a0;
   --color-warning: #ffc857;
   --color-pr: #ffc857;
-  --color-on-pr: #16141f;
+  --color-on-pr: #0e0d13;
   --color-rank-gold: #ffc857;
   --color-rank-silver: #d2d0dc;
   --color-rank-bronze: #f0a070;
@@ -37,10 +37,10 @@
   --color-heat-3: #ee3a50;
   --color-heat-4: #ff7385;
 
-  /* Diffusion: soft coloured glows instead of hard drop shadows. */
-  --shadow-glow: 0 10px 32px -8px rgb(183 156 255 / 0.55), 0 2px 10px -2px rgb(229 139 255 / 0.35);
-  --shadow-glow-volt: 0 8px 28px -10px rgb(212 255 58 / 0.45);
-  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.05) inset, 0 18px 40px -24px rgb(0 0 0 / 0.7);
+  /* Depth comes from light, not glow: a lit top edge and a short, soft drop. */
+  --shadow-glow: inset 0 1px 0 0 rgb(255 255 255 / 0.35), 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 8px 20px -10px rgb(183 156 255 / 0.35);
+  --shadow-glow-volt: 0 0 0 3px rgb(212 255 58 / 0.14);
+  --shadow-card: inset 0 1px 0 0 rgb(255 255 255 / 0.04), 0 1px 2px 0 rgb(0 0 0 / 0.35);
 
   --font-display: var(--font-barlow-condensed), "Arial Narrow", system-ui, sans-serif;
   --font-sans: var(--font-barlow), system-ui, -apple-system, sans-serif;
@@ -188,41 +188,44 @@
   }
 }
 
-/* Brand gradient (violet → orchid). Dark text on it is 8:1+. */
+/* Brand fill: violet, lit slightly from above so it reads as a solid, pressable surface. Dark text on it is 8:1+. */
 @utility bg-brand {
-  background-image: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-2) 100%);
+  background-color: var(--color-accent);
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0) 55%);
 }
+/* Titles are plain text: colour is saved for numbers and actions. */
 @utility text-brand {
-  background-image: linear-gradient(100deg, var(--color-text) 10%, var(--color-accent) 60%, var(--color-accent-2) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--color-text);
 }
-/* Content cards: a faint top-lit gradient + hairline highlight, no blur (blur is for floating bars). */
+/* Content cards: flat surface, hairline edge, lit top edge. No blur (blur is for floating bars). */
 @utility card {
-  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.045), rgb(255 255 255 / 0) 60%);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-card);
 }
-/* Hero surfaces: a purple mesh diffused across the card. */
+/* Hero surfaces: the same card with one quiet violet light in the top corner and a violet hairline. */
 @utility card-hero {
-  background-color: var(--color-surface-raised);
+  background-color: var(--color-surface);
   background-image:
-    radial-gradient(120% 90% at 0% 0%, rgb(124 92 255 / 0.75), transparent 58%),
-    radial-gradient(90% 80% at 100% 10%, rgb(212 92 255 / 0.55), transparent 62%),
-    radial-gradient(80% 70% at 60% 120%, rgb(162 60 240 / 0.3), transparent 60%);
-  border: 1px solid rgb(255 255 255 / 0.1);
+    radial-gradient(90% 70% at 0% 0%, rgb(183 156 255 / 0.16), transparent 70%),
+    radial-gradient(60% 50% at 100% 0%, rgb(229 139 255 / 0.07), transparent 70%);
+  border: 1px solid rgb(183 156 255 / 0.22);
   box-shadow: var(--shadow-card);
+}
+/* Inset well inside a card (stat tiles, chips): one step darker than the card, no border. */
+@utility well {
+  background-color: rgb(255 255 255 / 0.035);
+  border-radius: var(--radius-md);
 }
 /* Floating chrome (tab bar, sticky headers, sheets): translucent + blur over content. */
 @utility glass {
-  background-color: rgb(33 30 46 / 0.72);
+  background-color: rgb(20 19 27 / 0.9);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
   backdrop-filter: blur(20px) saturate(1.4);
 }
 
-/* Ambient aurora behind every screen: large blurred colour fields, fixed so content scrolls over it. */
+/* Ambient light behind every screen: one still violet light above the top edge, fading to the base.
+   Fixed, so content scrolls over it. Still on purpose: moving colour behind numbers costs legibility. */
 .aurora {
   position: fixed;
   inset: 0;
@@ -231,78 +234,24 @@
   overflow: hidden;
   background: var(--color-bg);
 }
-/* Four colour fields on their own orbits, a slow hue shift, and scroll parallax (see components/aurora.tsx). */
-.aurora {
-  animation: hue 40s ease-in-out infinite alternate;
-}
 .aurora .blob {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(70px);
-  will-change: transform;
+  filter: blur(60px);
 }
 .aurora .b1 {
-  width: 75vmax; height: 75vmax; top: -30vmax; left: -30vmax;
-  background: radial-gradient(circle, #7b48f5 0%, transparent 62%);
-  opacity: 0.75;
-  animation: orbit-a 18s ease-in-out infinite;
+  width: 120vmax; height: 60vmax; top: -38vmax; left: 50%; translate: -50% 0;
+  background: radial-gradient(closest-side, rgb(123 72 245 / 0.32), transparent);
 }
 .aurora .b2 {
-  width: 62vmax; height: 62vmax; top: 25vh; right: -32vmax;
-  background: radial-gradient(circle, #c44bff 0%, transparent 62%);
-  opacity: 0.55;
-  animation: orbit-b 22s ease-in-out infinite;
+  width: 50vmax; height: 40vmax; top: -18vmax; right: -16vmax;
+  background: radial-gradient(closest-side, rgb(196 75 255 / 0.12), transparent);
 }
-.aurora .b3 {
-  width: 50vmax; height: 50vmax; bottom: -22vmax; left: -10vmax;
-  background: radial-gradient(circle, #a23cf0 0%, transparent 62%);
-  opacity: 0.4;
-  animation: orbit-c 26s ease-in-out infinite;
-}
-.aurora .b4 {
-  width: 30vmax; height: 30vmax; top: 45vh; left: 30vw;
-  background: radial-gradient(circle, #9fd12a 0%, transparent 60%);
-  opacity: 0.16;
-  animation: orbit-d 30s ease-in-out infinite;
-}
-@keyframes orbit-a {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  33% { transform: translate3d(18vmax, 10vmax, 0) scale(1.15); }
-  66% { transform: translate3d(6vmax, 22vmax, 0) scale(0.92); }
-}
-@keyframes orbit-b {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  40% { transform: translate3d(-20vmax, -14vmax, 0) scale(1.2); }
-  70% { transform: translate3d(-8vmax, 10vmax, 0) scale(0.9); }
-}
-@keyframes orbit-c {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(24vmax, -18vmax, 0) scale(1.25); }
-}
-@keyframes orbit-d {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  25% { transform: translate3d(-22vw, -20vh, 0) scale(1.3); }
-  75% { transform: translate3d(18vw, 14vh, 0) scale(0.8); }
-}
+.aurora .b3,
+.aurora .b4 { display: none; }
 @keyframes breathe {
   0%, 100% { scale: 1; filter: drop-shadow(0 0 0 rgb(212 255 58 / 0)); }
   50% { scale: 1.05; filter: drop-shadow(0 0 14px rgb(212 255 58 / 0.45)); }
-}
-@keyframes hue {
-  from { filter: hue-rotate(0deg); }
-  to { filter: hue-rotate(22deg); }
-}
-/* Parallax: the whole field slides up a little as the page scrolls. */
-@supports (animation-timeline: scroll()) {
-  .aurora .layer {
-    position: absolute;
-    inset: -20vh 0;
-    animation: parallax linear both;
-    animation-timeline: scroll(root);
-  }
-  @keyframes parallax {
-    to { transform: translate3d(0, -14vh, 0); }
-  }
 }
 /* Film grain over the glows: breaks up gradient banding and adds texture. */
 .aurora {
@@ -313,7 +262,7 @@
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.07;
+  opacity: 0.035;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
@@ -336,24 +285,6 @@
 .stagger > *:nth-child(3) { animation-delay: 110ms; }
 .stagger > *:nth-child(4) { animation-delay: 150ms; }
 .stagger > *:nth-child(n + 5) { animation-delay: 180ms; }
-
-/* Scroll-driven depth: cards ease into place as they enter and recede as they leave the top.
-   Scale only: filters on every card during scroll are expensive on iPhone. */
-@supports (animation-timeline: view()) {
-  .stagger > * {
-    animation:
-      enter 480ms var(--ease-expo) both,
-      depth linear both;
-    animation-timeline: auto, view();
-    animation-range: normal, cover 0% cover 100%;
-  }
-  @keyframes depth {
-    0% { scale: 0.94; }
-    15% { scale: 1; }
-    85% { scale: 1; }
-    100% { scale: 0.96; }
-  }
-}
 
 /* Press response: a soft squeeze that springs back. */
 .press {
@@ -421,9 +352,9 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.12) 50%, transparent 65%);
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.07) 50%, transparent 65%);
   background-size: 250% 100%;
-  animation: sweep 1.6s var(--ease-standard) 0.6s 1 both, sweep 1.6s var(--ease-standard) 7s infinite;
+  animation: sweep 1.6s var(--ease-standard) 0.6s 1 both;
 }
 
 /* Half-strength sweep for surfaces that sit on screen a lot (the Home "This week" card). */

@@ -117,7 +117,7 @@ export default function LogPage() {
             fact.
           </p>
         </div>
-        <h2 className="mb-3 font-display text-lg font-semibold uppercase tracking-wide">
+        <h2 className="mb-3 text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-muted">
           History
         </h2>
         <HistoryList />
