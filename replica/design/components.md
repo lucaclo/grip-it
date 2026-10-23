@@ -16,6 +16,25 @@ Sources:
 - The skill's database had **no match** for leaderboard/gamification UX, so those specs below come
   from general practice and the recon, not the database.
 
+## Refinement rules (v3, 2026-10-23)
+
+The v2 look (moving aurora, gradient titles, glows on every card) read as busy. v3 keeps the identity
+(violet accent, volt for targets, condensed italic numbers) and takes the noise out:
+- **Background:** still. One violet light above the top edge, fading to `bg`. No motion behind numbers.
+- **Surfaces:** `card` is a flat `surface` with a hairline `border` and a lit top edge. `card-hero` adds
+  one quiet violet corner light and a violet hairline. Nested tiles use `well` (white 3.5%), not borders.
+- **Depth from light, not glow:** no coloured drop shadows. The primary button is solid `accent`, lit
+  from above.
+- **Type:** page titles are sentence case, Barlow Condensed bold, 38px, solid `text`. Section headers are
+  13px Barlow semibold, uppercase, 0.08em tracking, `text-muted`. Dates and group names go in an eyebrow
+  above the title.
+- **Lists:** rows are grouped in one card with `white/6%` dividers, not one card per row.
+- **Progress:** slim 6px meters (`Meter`) for anything with a target; rings only for the weekly session
+  goal and badges.
+- **Chips:** selected = inverted (`bg-text text-bg`); unselected = white 5% with a white 6% inset ring.
+- **States:** an unticked set is neutral; only a done set is green. Colour marks what happened, not
+  what could.
+
 Icons: **Lucide** (MIT), 24px, 2px stroke, one family only. No emoji as UI icons. The reaction
 set renders Lucide icons (flame, biceps-flexed, laugh, hand-metal, skull), stored as codes.
 Accessibility baseline for every component:

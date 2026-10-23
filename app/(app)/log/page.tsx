@@ -538,13 +538,13 @@ function ExerciseCard({
 
   return (
     <section
-      className={`card relative overflow-hidden rounded-lg transition-[border-color,box-shadow] duration-500 ${complete ? "!border-success/50 shadow-[0_18px_40px_-24px_rgb(75_227_160/0.6)]" : ""}`}
+      className={`card relative overflow-hidden rounded-lg transition-[border-color,box-shadow] duration-500 ${complete ? "!border-success/40" : ""}`}
       aria-label={name}
     >
       {/* per-exercise progress along the top edge */}
       <div aria-hidden className="absolute inset-x-0 top-0 h-[3px] bg-white/5">
         <div
-          className={`h-full transition-[width] duration-700 ease-[var(--ease-expo)] ${complete ? "bg-success" : "bg-brand"}`}
+          className={`h-full transition-[width] duration-700 ease-[var(--ease-expo)] ${complete ? "bg-success" : "bg-accent"}`}
           style={{ width: `${e.sets.length ? (done / e.sets.length) * 100 : 0}%` }}
         />
       </div>
@@ -585,7 +585,7 @@ function ExerciseCard({
         </div>
       )}
       {target.targetKg != null && (
-        <div className="mx-4 mt-2 rounded-md border border-volt/25 bg-volt/8 px-3 py-2 shadow-glow-volt">
+        <div className="mx-4 mt-2 rounded-md bg-white/[0.035] px-3 py-2.5 ring-1 ring-inset ring-volt/15">
           <p className="flex items-center gap-2 text-sm">
             <Target aria-hidden className="size-4 text-volt" />
             <span className="flex-1">
@@ -624,7 +624,7 @@ function ExerciseCard({
                 label={`Set ${j + 1}, swipe left to delete`}
               >
                 <div
-                  className={`${ROW_GRID} min-h-13 rounded-md px-2 transition-colors duration-300 ${set.done ? "bg-success/12 row-sweep" : "bg-surface"}`}
+                  className={`${ROW_GRID} min-h-13 rounded-md px-2 transition-colors duration-300 ${set.done ? "bg-success/[0.08] row-sweep" : ""}`}
                 >
                   <button
                     type="button"
@@ -667,7 +667,7 @@ function ExerciseCard({
                       setAsking(set.done ? null : j);
                     }}
                     disabled={!set.done && (set.reps <= 0 || set.kg < 0)}
-                    className={`mx-auto grid size-11 place-items-center rounded-md transition-colors disabled:opacity-40 ${set.done ? "bg-success text-on-accent shadow-[0_6px_18px_-6px_rgb(75_227_160/0.7)] motion-safe:animate-tick" : "border border-success/50 bg-surface-raised text-success"}`}
+                    className={`mx-auto grid size-11 place-items-center rounded-md transition-colors disabled:opacity-40 ${set.done ? "bg-success text-on-accent motion-safe:animate-tick" : "bg-white/[0.05] text-subtle ring-1 ring-inset ring-white/[0.1]"}`}
                   >
                     <Check aria-hidden className="size-5" strokeWidth={3} />
                   </button>
