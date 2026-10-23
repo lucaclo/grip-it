@@ -160,21 +160,21 @@ export function ProgressRing({
 
 /**
  * Slim horizontal meter: label and value on one line, a 6px bar under it. Fills on mount.
- * Turns success-green when the target is met; `tone` picks the fill colour otherwise.
+ * Neutral white while filling, success-green when the target is met (violet stays for links and "you").
  */
 export function Meter({
   label,
   value,
   target,
   unit,
-  tone = "accent",
+  tone = "neutral",
   delay = 0,
 }: {
   label: ReactNode;
   value: number;
   target: number;
   unit?: string;
-  tone?: "accent" | "volt" | "warning";
+  tone?: "neutral" | "accent" | "volt" | "warning";
   delay?: number;
 }) {
   const [shown, setShown] = useState(false);
@@ -184,7 +184,7 @@ export function Meter({
   }, []);
   const pct = target > 0 ? Math.min(1, Math.max(0, value / target)) : 0;
   const met = target > 0 && value >= target;
-  const fill = met ? "bg-success" : tone === "volt" ? "bg-volt" : tone === "warning" ? "bg-warning" : "bg-accent";
+  const fill = met ? "bg-success" : tone === "volt" ? "bg-volt" : tone === "warning" ? "bg-warning" : tone === "accent" ? "bg-accent" : "bg-text/85";
   return (
     <div role="img" aria-label={`${typeof label === "string" ? label : ""}: ${Math.round(value)} of ${Math.round(target)}${unit ? ` ${unit}` : ""}`}>
       <div className="flex items-baseline justify-between gap-3" aria-hidden>
