@@ -80,13 +80,13 @@ export default function Compete() {
 
         {podium.length >= 2 && <Podium key={metric} rows={podium} flagged={flaggedUsers} />}
 
-        <ol className="flex flex-col gap-2" aria-label={`${m.label} leaderboard${podium.length >= 2 ? ", from 4th" : ""}`}>
+        <ol className="card divide-y divide-white/[0.06] overflow-hidden rounded-lg" aria-label={`${m.label} leaderboard${podium.length >= 2 ? ", from 4th" : ""}`}>
           {rest.map((r) => {
             const you = r.userId === "me";
             return (
               <li
                 key={r.userId}
-                className={`flex min-h-16 items-center gap-3 rounded-md border px-3 ${you ? "border-accent/70 bg-gradient-to-r from-accent/18 to-accent-2/8 shadow-glow" : "card"}`}
+                className={`relative flex min-h-16 items-center gap-3 px-4 ${you ? "bg-accent/[0.08]" : ""}`}
               >
                 <span className="w-8 text-center">
                   {r.rank != null && r.rank <= 3 ? (
@@ -95,23 +95,23 @@ export default function Compete() {
                       <span className="tabular text-sm font-semibold">{r.rank}</span>
                     </span>
                   ) : (
-                    <span className="tabular text-xl font-semibold text-muted">{r.rank ?? "–"}</span>
+                    <span className="tabular text-lg font-semibold text-subtle">{r.rank ?? "–"}</span>
                   )}
                 </span>
                 <Avatar name={r.name} you={you} />
                 <span className="flex-1">
-                  <span className="flex items-center gap-1.5 text-base">
+                  <span className="flex items-center gap-1.5 text-base font-medium">
                     {r.name}
-                    {you && <span className="text-xs font-semibold uppercase text-accent">You</span>}
+                    {you && <span className="rounded-[5px] bg-accent/15 px-1.5 py-px text-[0.625rem] font-semibold uppercase tracking-[0.06em] text-accent">You</span>}
                     {flaggedUsers.has(r.userId) && (
                       <span className="inline-flex items-center gap-1 rounded-full border border-warning/50 px-1.5 text-xs text-warning" title="A recent PR jumped more than 15%. Honour system.">
                         <TriangleAlert aria-hidden className="size-3" /> big jump
                       </span>
                     )}
                   </span>
-                  <span className="block text-xs text-subtle">{r.note}</span>
+                  <span className="mt-0.5 block text-xs text-subtle">{r.note}</span>
                 </span>
-                <span className={`tabular text-stat font-semibold ${r.score == null ? "text-subtle" : ""}`}>{r.display}</span>
+                <span className={`num-hero text-[1.625rem] ${r.score == null ? "text-subtle" : ""}`}>{r.display}</span>
               </li>
             );
           })}
@@ -158,7 +158,7 @@ function MetricTabs({ value, onChange }: { value: Metric; onChange: (m: Metric) 
             role="radio"
             aria-checked={on}
             onClick={() => onChange(x.value)}
-            className={`min-h-11 shrink-0 snap-start rounded-full border px-4 text-sm font-medium transition-colors duration-200 ${on ? "border-accent/70 bg-accent/18 text-text shadow-glow" : "border-border bg-surface/80 text-muted"}`}
+            className={`min-h-10 shrink-0 snap-start rounded-full px-4 text-sm font-medium transition-colors duration-200 ${on ? "bg-text text-bg" : "bg-white/[0.05] text-muted ring-1 ring-inset ring-white/[0.06]"}`}
           >
             {x.label}
           </button>
@@ -193,8 +193,8 @@ function Podium({ rows, flagged }: { rows: ReturnType<typeof leaderboard>; flagg
         const you = r.userId === "me";
         return (
           <li key={r.userId} className={`flex min-w-0 flex-1 flex-col items-center ${p.order}`} aria-label={`${p.place}: ${r.name}, ${r.display}`}>
-            <span className={`relative mb-1.5 rounded-full bg-gradient-to-b ${p.ring} to-transparent p-[2px] ${i === 0 ? "shadow-[0_0_28px_rgb(255_200_87/0.45)]" : ""}`}>
-              <span className={`grid place-items-center rounded-full font-display font-semibold ${i === 0 ? "size-16 text-2xl" : "size-12 text-xl"} ${you ? "bg-brand text-on-accent" : "bg-surface-raised text-text"}`}>
+            <span className={`relative mb-1.5 rounded-full bg-gradient-to-b ${p.ring} to-transparent p-[2px] `}>
+              <span className={`grid place-items-center rounded-full font-display font-semibold ${i === 0 ? "size-16 text-2xl" : "size-12 text-xl"} ${you ? "bg-surface-raised text-accent" : "bg-surface-raised text-text"}`}>
                 {r.name.slice(0, 1)}
               </span>
               {i === 0 && (
@@ -207,7 +207,7 @@ function Podium({ rows, flagged }: { rows: ReturnType<typeof leaderboard>; flagg
             </span>
             <span className="max-w-full truncate text-sm font-medium">
               {r.name}
-              {you && <span className="ml-1 text-xs font-semibold uppercase text-accent">You</span>}
+              {you && <span className="ml-1 text-[0.625rem] font-semibold uppercase tracking-[0.06em] text-accent">You</span>}
             </span>
             <span className="num-hero text-2xl leading-tight">
               {r.score != null && /^[+-]?\d/.test(r.display) ? (
@@ -224,7 +224,7 @@ function Podium({ rows, flagged }: { rows: ReturnType<typeof leaderboard>; flagg
             {flagged.has(r.userId) && <TriangleAlert aria-label="Big jump, honour system" className="size-3.5 text-warning" />}
             <span
               style={{ animationDelay: `${p.delay}ms` }}
-              className={`mt-1.5 flex w-full ${p.height} origin-bottom items-start justify-center rounded-t-lg border border-b-0 border-white/10 bg-gradient-to-b from-white/12 to-white/2 pt-1.5 motion-safe:animate-grow`}
+              className={`mt-1.5 flex w-full ${p.height} origin-bottom items-start justify-center rounded-t-[12px] border border-b-0 border-white/[0.08] bg-gradient-to-b from-white/[0.08] to-white/[0.01] pt-1.5 motion-safe:animate-grow`}
             >
               <span className={`num-hero text-3xl ${p.text}`} aria-hidden>
                 {i + 1}
@@ -246,16 +246,16 @@ function RaceTrack({ challenge }: { challenge: ReturnType<typeof weeklyChallenge
   }, []);
   const leader = challenge.rows[0];
   return (
-    <div className="card-hero rounded-xl p-4">
+    <div className="card rounded-xl p-4">
       <div className="flex items-start gap-3">
         <div className="flex-1">
-          <p className="font-display text-xl font-semibold">{challenge.title}</p>
-          <p className="text-sm text-text">
+          <p className="text-lg font-semibold">{challenge.title}</p>
+          <p className="mt-0.5 text-sm text-muted">
             {leader && leader.score > 0 ? `${leader.name} leads with ${leader.score}` : "Nobody's started yet"} ·{" "}
             {challenge.daysLeft} day{challenge.daysLeft === 1 ? "" : "s"} left
           </p>
         </div>
-        <Flag aria-hidden className="size-6 text-volt" />
+        <span className="grid size-9 place-items-center rounded-[10px] bg-volt/12"><Flag aria-hidden className="size-[1.125rem] text-volt" /></span>
       </div>
       <ol className="mt-4 flex flex-col gap-3" aria-label="Race standings">
         {challenge.rows.map((r, i) => {
@@ -266,13 +266,13 @@ function RaceTrack({ challenge }: { challenge: ReturnType<typeof weeklyChallenge
             <li key={r.userId} aria-label={`${i + 1}. ${r.name}: ${r.score} of ${challenge.goal} sets`}>
               <div aria-hidden className="relative h-9">
                 {/* lane */}
-                <span className="absolute inset-x-0 top-1/2 h-2 -translate-y-1/2 rounded-full bg-black/30" />
+                <span className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-white/[0.07]" />
                 <span
-                  className={`absolute left-0 top-1/2 h-2 -translate-y-1/2 rounded-full transition-[width] duration-[1600ms] ease-[var(--ease-expo)] ${finished ? "bg-success" : you ? "bg-brand" : "bg-white/25"}`}
+                  className={`absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full transition-[width] duration-[1600ms] ease-[var(--ease-expo)] ${finished ? "bg-success" : you ? "bg-accent" : "bg-white/25"}`}
                   style={{ width: go ? `calc((100% - 2.25rem) * ${pct} + 1.125rem)` : "1.125rem", transitionDelay: `${i * 90}ms` }}
                 />
                 {/* finish line */}
-                <span className="absolute right-0 top-0 h-full w-1 rounded-full bg-[repeating-linear-gradient(0deg,var(--color-text)_0_4px,transparent_4px_8px)] opacity-60" />
+                <span className="absolute right-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-[repeating-linear-gradient(0deg,var(--color-text)_0_3px,transparent_3px_6px)] opacity-50" />
                 {/* runner */}
                 <span
                   className="absolute top-0 grid size-9 place-items-center rounded-full transition-[left] duration-[1600ms] ease-[var(--ease-expo)]"
@@ -280,15 +280,15 @@ function RaceTrack({ challenge }: { challenge: ReturnType<typeof weeklyChallenge
                 >
                   <span
                     className={`grid size-9 place-items-center rounded-full font-display text-sm font-semibold ring-2 ${
-                      you ? "bg-brand text-on-accent ring-accent shadow-glow" : finished ? "bg-success text-on-accent ring-success" : "bg-surface-raised text-text ring-white/15"
+                      you ? "bg-accent text-on-accent ring-surface" : finished ? "bg-success text-on-accent ring-surface" : "bg-surface-raised text-text ring-surface"
                     }`}
                   >
                     {r.name.slice(0, 1)}
                   </span>
                 </span>
               </div>
-              <div className="mt-0.5 flex justify-between text-xs text-text">
-                <span className={you ? "font-semibold" : ""}>
+              <div className="mt-0.5 flex justify-between text-xs text-muted">
+                <span className={you ? "font-semibold text-text" : ""}>
                   {i + 1}. {r.name}
                 </span>
                 <span className="tabular">
