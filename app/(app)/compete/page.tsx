@@ -102,7 +102,7 @@ export default function Compete() {
                 <span className="flex-1">
                   <span className="flex items-center gap-1.5 text-base font-medium">
                     {r.name}
-                    {you && <span className="rounded-[5px] bg-accent/15 px-1.5 py-px text-[0.625rem] font-semibold uppercase tracking-[0.06em] text-accent">You</span>}
+                    {you && <span className="rounded-[5px] bg-accent/15 px-1.5 py-px text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-accent">You</span>}
                     {flaggedUsers.has(r.userId) && (
                       <span className="inline-flex items-center gap-1 rounded-full border border-warning/50 px-1.5 text-xs text-warning" title="A recent PR jumped more than 15%. Honour system.">
                         <TriangleAlert aria-hidden className="size-3" /> big jump
@@ -207,7 +207,7 @@ function Podium({ rows, flagged }: { rows: ReturnType<typeof leaderboard>; flagg
             </span>
             <span className="max-w-full truncate text-sm font-medium">
               {r.name}
-              {you && <span className="ml-1 text-[0.625rem] font-semibold uppercase tracking-[0.06em] text-accent">You</span>}
+              {you && <span className="ml-1 text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-accent">You</span>}
             </span>
             <span className="num-hero text-2xl leading-tight">
               {r.score != null && /^[+-]?\d/.test(r.display) ? (

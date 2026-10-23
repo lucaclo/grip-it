@@ -242,7 +242,7 @@ function GoalRing({ done, goal, className = "" }: { done: number; goal: number; 
               <CountUp value={done} />
               <span className="text-base text-subtle">/{goal}</span>
             </span>
-            <span className="mt-0.5 block text-[0.625rem] font-semibold uppercase tracking-[0.08em] text-muted">{met ? "goal hit" : "sessions"}</span>
+            <span className="mt-0.5 block text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted">{met ? "goal hit" : "sessions"}</span>
           </div>
         </div>
       </div>

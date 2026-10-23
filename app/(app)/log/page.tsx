@@ -667,7 +667,7 @@ function ExerciseCard({
                       setAsking(set.done ? null : j);
                     }}
                     disabled={!set.done && (set.reps <= 0 || set.kg < 0)}
-                    className={`mx-auto grid size-11 place-items-center rounded-md transition-colors disabled:opacity-40 ${set.done ? "bg-success text-on-accent motion-safe:animate-tick" : "bg-white/[0.05] text-subtle ring-1 ring-inset ring-white/[0.1]"}`}
+                    className={`mx-auto grid size-11 place-items-center rounded-md transition-colors disabled:opacity-40 ${set.done ? "bg-success text-on-accent motion-safe:animate-tick" : "bg-white/[0.05] text-muted ring-1 ring-inset ring-border-input"}`}
                   >
                     <Check aria-hidden className="size-5" strokeWidth={3} />
                   </button>

@@ -383,6 +383,25 @@
 @media (prefers-reduced-transparency: reduce) {
   .aurora .blob,
   .grain { display: none; }
+  /* Floating bars and sheets go solid: no content showing through. */
+  .glass {
+    background-color: var(--color-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Increase Contrast: brighter secondary text and real edges on cards, wells and controls. */
+@media (prefers-contrast: more) {
+  :root {
+    --color-muted: #d2d0dc;
+    --color-subtle: #b4b1c4;
+    --color-border: #6c6980;
+    --color-border-input: #a19eb3;
+  }
+  .card,
+  .card-hero { border-color: var(--color-border-input); }
+  .glass { background-color: var(--color-surface); }
 }
 
 .pt-safe { padding-top: env(safe-area-inset-top); }

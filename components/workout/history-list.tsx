@@ -41,7 +41,7 @@ export function HistoryList() {
                   <Link href={`/workout/${w.id}`} transitionTypes={["drill-in"]} className="press flex min-h-16 items-center gap-3 px-4 py-3">
                     <span className="grid size-11 shrink-0 place-content-center gap-0.5 rounded-[12px] bg-white/[0.04] text-center leading-none">
                       <span className="num-hero text-lg">{d.getDate()}</span>
-                      <span className="text-[0.625rem] font-semibold uppercase tracking-[0.06em] text-subtle">{d.toLocaleDateString("en-GB", { weekday: "short" })}</span>
+                      <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-subtle">{d.toLocaleDateString("en-GB", { weekday: "short" })}</span>
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-1.5 text-base font-medium">
