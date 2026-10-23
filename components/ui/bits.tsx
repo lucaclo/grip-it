@@ -3,6 +3,7 @@
 import { ChevronDown, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useState, type ReactNode } from "react";
+import { useStore } from "@/lib/data/store";
 import { CountUp } from "./motion";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -271,13 +272,31 @@ export function Meter({
   );
 }
 
-export function Avatar({ name, you }: { name: string; you?: boolean }) {
+/** A person's initial in a circle, or your profile photo when it's you and you've set one. */
+export function Avatar({
+  name,
+  you,
+  className = "size-10 text-lg ring-1",
+  tone,
+}: {
+  name: string;
+  you?: boolean;
+  /** Size, type size and ring width. */
+  className?: string;
+  /** Colours for the initial; defaults to violet for you, neutral for everyone else. */
+  tone?: string;
+}) {
+  const photo = useStore((s) => (you ? s.me?.photo : undefined));
+  const colours = tone ?? (you ? "bg-accent/15 text-accent ring-accent/35" : "bg-surface-raised text-text ring-border");
   return (
-    <span
-      aria-hidden
-      className={`grid size-10 shrink-0 place-items-center rounded-full font-display text-lg font-semibold ${you ? "bg-accent/15 text-accent ring-1 ring-accent/35" : "bg-surface-raised text-text ring-1 ring-border"}`}
-    >
-      {name.slice(0, 1).toUpperCase()}
+    <span aria-hidden className={`grid shrink-0 place-items-center overflow-hidden rounded-full font-display font-semibold ${className} ${colours}`}>
+      {photo ? (
+        // A local data URL: next/image would add nothing here.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={photo} alt="" className="size-full object-cover" />
+      ) : (
+        name.slice(0, 1).toUpperCase()
+      )}
     </span>
   );
 }

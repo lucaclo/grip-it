@@ -20,6 +20,8 @@ export type Profile = {
   shareWeight: boolean;
   shareNutrition: boolean;
   onboardedAt: string;
+  /** Profile photo: a 256 px square JPEG data URL (lib/avatar.ts). Stays on this phone for now. */
+  photo?: string;
 };
 
 /** A group-mate: a made-up demo friend, or a real one synced from the group. */

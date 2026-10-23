@@ -63,3 +63,4 @@ GPS segments,compete,skip,Strava,skip,not a lifting feature
 Apple Health sync,integrations,skip,Fitbod,skip,PWA cannot access HealthKit
 Coach platform,coach,skip,Hevy Coach,skip,not needed for under 30 friends
 Grip variations per exercise (width and hand position) with muscle shifts and grip-aware targets and PRs,logging,should,none,yes,lib/science/grips.ts; cited; migration 0003 adds workout_exercises.grip
+Profile photo,social,could,Strava/Hevy,partial,feedback 2026-10-23; on this phone only (lib/avatar.ts); friends need a profiles.avatar column and sync

@@ -194,9 +194,7 @@ function Podium({ rows, flagged }: { rows: ReturnType<typeof leaderboard>; flagg
         return (
           <li key={r.userId} className={`flex min-w-0 flex-1 flex-col items-center ${p.order}`} aria-label={`${p.place}: ${r.name}, ${r.display}`}>
             <span className={`relative mb-1.5 rounded-full bg-gradient-to-b ${p.ring} to-transparent p-[2px] `}>
-              <span className={`grid place-items-center rounded-full font-display font-semibold ${i === 0 ? "size-16 text-2xl" : "size-12 text-xl"} ${you ? "bg-surface-raised text-accent" : "bg-surface-raised text-text"}`}>
-                {r.name.slice(0, 1)}
-              </span>
+              <Avatar name={r.name} you={you} className={i === 0 ? "size-16 text-2xl" : "size-12 text-xl"} tone={`bg-surface-raised ${you ? "text-accent" : "text-text"}`} />
               {i === 0 && (
                 <Crown
                   aria-hidden
@@ -283,13 +281,12 @@ function RaceTrack({ challenge }: { challenge: ReturnType<typeof weeklyChallenge
                   className="absolute top-0 grid size-9 place-items-center rounded-full transition-[left] duration-[1600ms] ease-[var(--ease-expo)]"
                   style={{ left: go ? `calc((100% - 2.25rem) * ${pct})` : "0px", transitionDelay: `${i * 90}ms` }}
                 >
-                  <span
-                    className={`grid size-9 place-items-center rounded-full font-display text-sm font-semibold ring-2 ${
-                      you ? "bg-accent text-on-accent ring-surface" : finished ? "bg-success text-on-accent ring-surface" : "bg-surface-raised text-text ring-surface"
-                    }`}
-                  >
-                    {r.name.slice(0, 1)}
-                  </span>
+                  <Avatar
+                    name={r.name}
+                    you={you}
+                    className="size-9 text-sm ring-2"
+                    tone={`ring-surface ${you ? "bg-accent text-on-accent" : finished ? "bg-success text-on-accent" : "bg-surface-raised text-text"}`}
+                  />
                 </span>
               </div>
               <div className="mt-0.5 flex justify-between text-xs text-muted">

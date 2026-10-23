@@ -1,11 +1,11 @@
 "use client";
 
-import { Award, ChevronRight, Download, Flame, Lock, Medal, MessageSquarePlus, RotateCcw, Sparkles, Target, Trophy } from "lucide-react";
+import { Award, Camera, ChevronRight, Download, Flame, ImagePlus, Lock, Medal, MessageSquarePlus, RotateCcw, Sparkles, Target, Trash2, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Disclosure, PageHeader, SectionTitle } from "@/components/ui/bits";
+import { Avatar, Disclosure, PageHeader, SectionTitle } from "@/components/ui/bits";
 import { CountUp } from "@/components/ui/motion";
 import { NumberField, Toggle } from "@/components/ui/fields";
 import { RirToggle } from "@/components/rir-toggle";
@@ -14,6 +14,7 @@ import { FriendsCard } from "@/components/friends/friends-card";
 import { Sheet } from "@/components/ui/sheet";
 import { allPRs, streakOf, workoutsOf } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
+import { photoFromFile } from "@/lib/avatar";
 import { ExperiencePicker, experienceLabel, GoalPicker, goalTitle, HelpMeChoose } from "@/components/goal-picker";
 
 export default function Me() {
@@ -55,9 +56,7 @@ export default function Me() {
       <div className="stagger flex flex-col gap-4">
         <section className="card-hero relative overflow-hidden rounded-xl p-5">
           <div className="flex items-center gap-4">
-            <span className="rounded-full p-[2px] ring-1 ring-accent/40">
-              <span className="grid size-16 place-items-center rounded-full bg-accent/15 font-display text-3xl font-bold text-accent">{me.name.slice(0, 1)}</span>
-            </span>
+            <ProfilePhoto name={me.name} />
             <div className="flex-1">
               <p className="font-display text-[1.75rem] font-bold leading-tight tracking-[-0.01em]">{me.name}</p>
               <p className="mt-0.5 text-sm text-muted">
@@ -229,6 +228,76 @@ export default function Me() {
           <Button variant="secondary" onClick={() => setResetOpen(false)}>
             Cancel
           </Button>
+        </div>
+      </Sheet>
+    </>
+  );
+}
+
+/** Your avatar on Me: tap to pick a photo (or change/remove one). The photo stays on this phone. */
+function ProfilePhoto({ name }: { name: string }) {
+  const photo = useStore((s) => s.me?.photo);
+  const updateProfile = useStore((s) => s.updateProfile);
+  const input = useRef<HTMLInputElement>(null);
+  const [menu, setMenu] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => (photo ? setMenu(true) : input.current?.click())}
+        aria-label={photo ? "Change profile photo" : "Add a profile photo"}
+        className="press relative shrink-0 rounded-full p-[2px] ring-1 ring-accent/40"
+      >
+        <Avatar name={name} you className="size-16 text-3xl font-bold" />
+        <span aria-hidden className="absolute -right-0.5 -bottom-0.5 grid size-6 place-items-center rounded-full bg-text text-bg ring-2 ring-surface">
+          <Camera className="size-3.5" strokeWidth={2.4} />
+        </span>
+      </button>
+      <input
+        ref={input}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          e.target.value = ""; // picking the same photo again still fires
+          if (!file) return;
+          try {
+            updateProfile({ photo: await photoFromFile(file) });
+            setError(null);
+          } catch (err) {
+            setError(err instanceof Error ? err.message : "Couldn't use that photo.");
+          }
+        }}
+      />
+      {error && (
+        <p role="alert" className="absolute inset-x-5 bottom-2 text-sm text-danger">
+          {error}
+        </p>
+      )}
+      <Sheet open={menu} onClose={() => setMenu(false)} title="Profile photo">
+        <div className="flex flex-col gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setMenu(false);
+              input.current?.click();
+            }}
+          >
+            <ImagePlus aria-hidden className="size-5" /> Choose a new photo
+          </Button>
+          <Button
+            variant="ghost"
+            className="text-danger"
+            onClick={() => {
+              updateProfile({ photo: undefined });
+              setMenu(false);
+            }}
+          >
+            <Trash2 aria-hidden className="size-5" /> Remove photo
+          </Button>
+          <p className="mt-1 text-center text-xs text-subtle">Your photo stays on this phone for now.</p>
         </div>
       </Sheet>
     </>

@@ -54,6 +54,7 @@ function initialState(): State {
  * v1 -> v2: emoji reactions became likes (any reaction of yours = a like); comments start empty.
  * v2 -> v3: friends sync. No account yet, and your existing workouts queue to upload once you join.
  * Grip variations (WorkoutExercise.grip) are optional, so v3 data needs no step: no grip = the usual grip.
+ * Profile photos (Profile.photo) are optional too: no photo = the initial, as before.
  */
 export function migrate(persisted: unknown, fromVersion: number): State {
   const st = { ...(persisted as State) };
