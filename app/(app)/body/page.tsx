@@ -4,7 +4,7 @@ import { Lock } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Area, CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
 import { Button } from "@/components/ui/button";
-import { Card, PageHeader, ProgressRing, SectionTitle } from "@/components/ui/bits";
+import { Card, Meter, PageHeader, SectionTitle } from "@/components/ui/bits";
 import { InfoButton } from "@/components/ui/info";
 import { NumberField } from "@/components/ui/fields";
 import { CountUp } from "@/components/ui/motion";
@@ -117,9 +117,9 @@ export default function Body() {
         <Card>
           <SectionTitle>Today&apos;s food</SectionTitle>
           {t && (
-            <div className="mb-4 flex justify-around">
-              <ProgressRing label="Calories" unit="kcal" value={kcal ?? 0} target={t.kcal} />
-              <ProgressRing label="Protein" unit="g" value={protein ?? 0} target={t.proteinG} />
+            <div className="mb-5 flex flex-col gap-4">
+              <Meter label="Calories" unit="kcal" value={kcal ?? 0} target={t.kcal} />
+              <Meter label="Protein" unit="g" value={protein ?? 0} target={t.proteinG} delay={120} />
             </div>
           )}
           <div className="grid grid-cols-2 gap-3">

@@ -189,7 +189,7 @@ export function HelpMeChoose({
         {result && (
           <div className="flex flex-col gap-4 motion-safe:animate-rise">
             <div className="card-hero rounded-xl p-4">
-              <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-text">
+              <p className="flex items-center gap-1.5 text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-muted">
                 <Sparkles aria-hidden className="size-4 text-volt" /> We suggest
               </p>
               <p className="mt-2 font-display text-3xl font-bold leading-tight">{goalTitle(result.goal)}</p>

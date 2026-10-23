@@ -68,7 +68,7 @@ export function Research({ keys }: { keys: string[] }) {
   if (!list.length) return null;
   return (
     <section aria-label="The research" className="mt-1 border-t border-border pt-4">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-subtle">The research</h3>
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-subtle">The research</h3>
       <ul className="flex flex-col gap-3">
         {list.map((c) => (
           <li key={c.key} className="rounded-md bg-surface-raised/70 p-3">

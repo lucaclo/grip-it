@@ -61,7 +61,7 @@ export default function ExerciseHistory() {
       ) : (
         <div className="stagger flex flex-col gap-4">
           <section className="card-hero shine shine-soft rounded-xl p-5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-text">Best estimated 1RM</p>
+            <p className="text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-muted">Best estimated 1RM</p>
             <p className="mt-1 flex items-end gap-3">
               <CountUp value={top.e1rm} decimals={top.e1rm % 1 ? 1 : 0} suffix=" kg" duration={1200} className="num-hero text-[3.5rem] leading-none" />
               {sessions.length > 1 && (

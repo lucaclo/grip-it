@@ -132,7 +132,7 @@ export function HeatFigure({
         {(["front", "back"] as const).map((v) => (
           <figure key={v} className="flex flex-col items-center gap-1">
             <Side view={v} levels={levels} selected={selected} onSelect={onSelect} className={className} />
-            <figcaption className="text-[0.6875rem] uppercase tracking-widest text-subtle">{v}</figcaption>
+            <figcaption className="text-[0.6875rem] uppercase tracking-[0.08em] text-subtle">{v}</figcaption>
           </figure>
         ))}
       </div>

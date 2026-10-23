@@ -70,7 +70,7 @@ export function FriendsCard({ manage = false }: { manage?: boolean }) {
                   navigator.clipboard?.writeText(group.inviteCode);
                   setCopied(true);
                 }}
-                className="inline-flex min-h-9 items-center gap-1 font-semibold tracking-widest text-text"
+                className="inline-flex min-h-9 items-center gap-1 font-semibold tracking-[0.08em] text-text"
                 aria-label={`Invite code ${group.inviteCode.split("").join(" ")}. Tap to copy`}
               >
                 {group.inviteCode}

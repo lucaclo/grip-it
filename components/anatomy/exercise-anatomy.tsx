@@ -52,7 +52,7 @@ export function ExerciseAnatomy({ exercise, figureClass = "max-h-80" }: { exerci
           {views.map((v) => (
             <figure key={v} className="flex flex-col items-center gap-1">
               <MuscleFigure view={v} primary={w.primary} secondary={w.secondary} detail="icon" className="h-28 w-auto" />
-              <figcaption className="text-[0.6875rem] uppercase tracking-widest text-subtle">{v}</figcaption>
+              <figcaption className="text-[0.6875rem] uppercase tracking-[0.08em] text-subtle">{v}</figcaption>
             </figure>
           ))}
         </div>
