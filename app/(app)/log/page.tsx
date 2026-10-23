@@ -3,6 +3,7 @@
 import {
   CalendarClock,
   Check,
+  ChevronDown,
   EllipsisVertical,
   Minus,
   Plus,
@@ -99,10 +100,7 @@ export default function LogPage() {
   if (!draft) {
     return (
       <>
-        <PageHeader
-          title="Log"
-          subtitle="Start a session, or open a past one to view or edit it."
-        />
+        <PageHeader title="Log" />
         <div className="card-hero mb-7 rounded-xl p-5">
           <div className="flex items-start gap-4">
             <span className="grid size-12 shrink-0 place-items-center rounded-[14px] bg-accent/15 ring-1 ring-inset ring-accent/25">
@@ -111,18 +109,13 @@ export default function LogPage() {
             <div>
               <p className="text-lg font-semibold leading-snug">New session</p>
               <p className="mt-1 text-sm text-muted">
-                Every set saves as you go. Close the app mid-session and pick up
-                right where you left off.
+                Every set saves as you go, even if you close the app.
               </p>
             </div>
           </div>
           <Button size="lg" className="mt-5 w-full" onClick={startWorkout}>
             Start workout
           </Button>
-          <p className="mt-3 text-center text-xs text-subtle">
-            Already trained? Start one, turn on Auto-tick and log it after the
-            fact.
-          </p>
         </div>
         <h2 className="sr-only">History</h2>
         <HistoryList />
@@ -258,14 +251,6 @@ export default function LogPage() {
       </header>
 
       <div className="stagger flex flex-col gap-4 pt-4">
-        <div className="card rounded-lg px-4 py-1">
-          <Toggle
-            label="Auto-tick sets"
-            description="For logging a workout you've already done: every set with reps counts, no need to tap each tick."
-            checked={!!draft.autoTick}
-            onChange={setAutoTick}
-          />
-        </div>
         {doneSets === 0 && draft.exercises.length > 0 && !draft.autoTick && (
           <p className="-my-1 text-center text-sm text-muted">
             Tap{" "}
@@ -297,6 +282,15 @@ export default function LogPage() {
         >
           <Plus aria-hidden className="size-5" /> Add exercise
         </Button>
+        {/* Session options sit below the work, not above it. */}
+        <div className="mt-2 border-t border-white/[0.06] px-1 pt-2">
+          <Toggle
+            label="Auto-tick sets"
+            description="Logging a past workout? Every set with reps counts."
+            checked={!!draft.autoTick}
+            onChange={setAutoTick}
+          />
+        </div>
         <Button
           variant="ghost"
           onClick={() => setDiscardOpen(true)}
@@ -497,6 +491,7 @@ function ExerciseCard({
     setGrip,
   } = s;
   const [undo, setUndo] = useState<{ set: DraftSet; at: number } | null>(null);
+  const [plates, setPlates] = useState(false); // plate diagram is on request, not always on screen
   useEffect(() => {
     if (!undo) return;
     const t = setTimeout(() => setUndo(null), 8000);
@@ -597,10 +592,21 @@ function ExerciseCard({
             <span className="rounded-full bg-volt/15 px-2 py-0.5 text-xs font-semibold text-volt">
               {target.label}
             </span>
+            {isBarbell && (
+              <button
+                type="button"
+                aria-expanded={plates}
+                onClick={() => setPlates((p) => !p)}
+                className="-my-2 -mr-2 flex min-h-11 items-center gap-0.5 px-2 text-xs font-medium text-muted"
+              >
+                Plates
+                <ChevronDown aria-hidden className={`size-3.5 transition-transform ${plates ? "rotate-180" : ""}`} />
+              </button>
+            )}
           </p>
           {target.action === "new_grip" && <p className="mt-1 text-xs text-muted">{target.reason}</p>}
-          {isBarbell && (
-            <div className="mt-2">
+          {isBarbell && plates && (
+            <div className="mt-2 motion-safe:animate-rise">
               <PlateBar kg={target.targetKg} />
             </div>
           )}

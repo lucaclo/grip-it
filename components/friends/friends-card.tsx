@@ -61,7 +61,7 @@ export function FriendsCard({ manage = false }: { manage?: boolean }) {
         <div className="flex items-center gap-3">
           <Users aria-hidden className="size-6 shrink-0 text-accent" />
           <div className="min-w-0 flex-1">
-            <p className="truncate font-display text-lg font-semibold">{group.name}</p>
+            <p className="truncate font-medium">{group.name}</p>
             <p className="text-sm text-muted">
               {members} member{members === 1 ? "" : "s"} · code{" "}
               <button
@@ -84,18 +84,18 @@ export function FriendsCard({ manage = false }: { manage?: boolean }) {
           </Button>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
-          <div>
-            <p className="font-display text-lg font-semibold">Compete with friends</p>
-            <p className="text-sm text-muted">Send a link. They tap it, add Grip It, and they&apos;re on your leaderboard.</p>
+        <div className="flex items-center gap-3">
+          <Users aria-hidden className="size-6 shrink-0 text-accent" />
+          <div className="min-w-0 flex-1">
+            <p className="font-medium">Compete with friends</p>
+            <button type="button" onClick={() => setJoinOpen(true)} className="-my-2 min-h-11 text-left text-[0.8125rem] text-accent">
+              Got a code? Join a group
+            </button>
           </div>
-          <Button size="lg" onClick={invite} disabled={!!busy || !me}>
-            {busy === "invite" ? <Loader2 aria-hidden className="size-5 animate-spin" /> : <UserPlus aria-hidden className="size-5" />}
-            Invite friends
+          <Button size="sm" onClick={invite} disabled={!!busy || !me} className="min-h-11 shrink-0">
+            {busy === "invite" ? <Loader2 aria-hidden className="size-4 animate-spin" /> : <UserPlus aria-hidden className="size-4" />}
+            Invite
           </Button>
-          <button type="button" onClick={() => setJoinOpen(true)} className="min-h-11 text-sm text-accent">
-            Got a code? Join a group
-          </button>
         </div>
       )}
 

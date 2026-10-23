@@ -244,7 +244,11 @@ function RaceTrack({ challenge }: { challenge: ReturnType<typeof weeklyChallenge
     const id = requestAnimationFrame(() => setGo(true));
     return () => cancelAnimationFrame(id);
   }, []);
+  const [all, setAll] = useState(false);
   const leader = challenge.rows[0];
+  // Top three plus you; everyone else behind "Show everyone".
+  const shown = all ? challenge.rows : challenge.rows.filter((r, i) => i < 3 || r.userId === "me");
+  const hidden = challenge.rows.length - shown.length;
   return (
     <div className="card rounded-xl p-4">
       <div className="flex items-start gap-3">
@@ -258,7 +262,8 @@ function RaceTrack({ challenge }: { challenge: ReturnType<typeof weeklyChallenge
         <span className="grid size-9 place-items-center rounded-[10px] bg-volt/12"><Flag aria-hidden className="size-[1.125rem] text-volt" /></span>
       </div>
       <ol className="mt-4 flex flex-col gap-3" aria-label="Race standings">
-        {challenge.rows.map((r, i) => {
+        {shown.map((r) => {
+          const i = challenge.rows.indexOf(r);
           const pct = Math.min(1, r.score / challenge.goal);
           const you = r.userId === "me";
           const finished = r.score >= challenge.goal;
@@ -299,6 +304,11 @@ function RaceTrack({ challenge }: { challenge: ReturnType<typeof weeklyChallenge
           );
         })}
       </ol>
+      {(hidden > 0 || all) && challenge.rows.length > 3 && (
+        <button type="button" onClick={() => setAll((a) => !a)} className="mt-1 -mb-2 flex min-h-11 w-full items-center justify-center gap-1 text-sm text-accent">
+          {all ? "Show top three" : `Show everyone (${hidden} more)`}
+        </button>
+      )}
     </div>
   );
 }

@@ -67,7 +67,7 @@ export default function Feed() {
 
   return (
     <>
-      <PageHeader title="Feed" subtitle="Double-tap a post to like it" />
+      <PageHeader title="Feed" />
       <div className="flex flex-col gap-6">
         {groups.map((g) => (
           <section key={g.label} aria-label={g.label}>

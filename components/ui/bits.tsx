@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft } from "lucide-react";
+import { ChevronDown, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { CountUp } from "./motion";
@@ -155,6 +155,73 @@ export function ProgressRing({
         {label} {met && <span className="text-success">· hit</span>}
       </span>
     </div>
+  );
+}
+
+/**
+ * A collapsed bar that opens in place: icon, title and a one-line summary when closed; the full card when
+ * open. Remembers open/closed per `id` on this phone (a viewing preference, so plain localStorage).
+ */
+export function Disclosure({
+  id,
+  icon,
+  title,
+  summary,
+  children,
+}: {
+  id: string;
+  icon: ReactNode;
+  title: string;
+  summary?: ReactNode;
+  children: ReactNode;
+}) {
+  const key = `gripit:open:${id}`;
+  const panelId = useId();
+  const [open, setOpen] = useState(() => {
+    try {
+      return typeof window !== "undefined" && localStorage.getItem(key) === "1";
+    } catch {
+      return false;
+    }
+  });
+  function toggle() {
+    setOpen((o) => {
+      try {
+        localStorage.setItem(key, o ? "0" : "1");
+      } catch {
+        // storage blocked: the bar still works, it just won't remember
+      }
+      return !o;
+    });
+  }
+  return (
+    <section className="card overflow-hidden rounded-lg">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={toggle}
+        className="press flex min-h-14 w-full items-center gap-3 px-4 py-2.5 text-left"
+      >
+        <span className="grid size-8 shrink-0 place-items-center rounded-[9px] bg-white/[0.06] text-muted" aria-hidden>
+          {icon}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-medium">{title}</span>
+          {summary && !open && <span className="block truncate text-[0.8125rem] text-muted">{summary}</span>}
+        </span>
+        <ChevronDown aria-hidden className={`size-5 shrink-0 text-subtle transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div
+        id={panelId}
+        inert={!open}
+        className={`grid transition-[grid-template-rows] duration-300 ease-[var(--ease-expo)] ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div className="border-t border-white/[0.06] px-4 pt-4 pb-4">{children}</div>
+        </div>
+      </div>
+    </section>
   );
 }
 

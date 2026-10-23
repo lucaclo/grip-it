@@ -1,14 +1,14 @@
 "use client";
 
-import { ChevronRight, Flame, Plus, Scale, Trophy } from "lucide-react";
+import { ChevronRight, Dumbbell, Plus, Utensils } from "lucide-react";
 import { BarbellIcon } from "@/components/icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { Card, Meter, PageHeader, SectionTitle } from "@/components/ui/bits";
+import { Disclosure, Meter, PageHeader } from "@/components/ui/bits";
 import { CountUp } from "@/components/ui/motion";
-import { leaderboard, myTargets, streakOf, weekStart, weeklyHardSets, weeklyVolume } from "@/lib/data/selectors";
+import { leaderboard, myTargets, weekStart, weeklyVolume } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
 import { MUSCLE_LABEL, MUSCLES, VOLUME_BAND, volumeStatus } from "@/lib/science/volume";
 
@@ -19,8 +19,6 @@ export default function Home() {
   const t = useMemo(() => myTargets(s), [s]);
   const today = new Date().toISOString().slice(0, 10);
   const n = s.nutrition.find((x) => x.day === today);
-  const streak = streakOf(s, "me", me.sessionsPerWeek);
-  const hard = weeklyHardSets(s, "me");
   const sessionsThisWeek = s.workouts.filter((w) => w.userId === "me" && Date.parse(w.startedAt) >= weekStart().getTime()).length;
   const [now] = useState(() => new Date());
   // Mon–Sun of this week, marking days with at least one workout.
@@ -76,7 +74,7 @@ export default function Home() {
         )}
 
         <Link href="/compete" transitionTypes={["tab-forward"]}
-          className="card-hero press relative overflow-hidden rounded-xl p-5" aria-label={`This week: rank ${myRow?.rank ?? "none"}, ${streak}-week streak, ${hard} hard sets`}>
+          className="card-hero press relative overflow-hidden rounded-xl p-5" aria-label={`This week: rank ${myRow?.rank ?? "none"}, ${sessionsThisWeek} of ${me.sessionsPerWeek} sessions`}>
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-muted">This week</p>
@@ -115,34 +113,22 @@ export default function Home() {
             ))}
           </ol>
 
-          <dl className="mt-5 grid grid-cols-2 divide-x divide-white/[0.08] border-t border-white/[0.08] pt-4">
-            <div className="flex items-center gap-3 pr-4">
-              <Flame aria-hidden className="size-5 shrink-0 text-volt" />
-              <div>
-                <dd><CountUp value={streak} className="num-hero block text-[1.625rem] leading-none" /></dd>
-                <dt className="mt-1 text-xs text-muted">week streak</dt>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 pl-4">
-              <Trophy aria-hidden className="size-5 shrink-0 text-volt" />
-              <div>
-                <dd><CountUp value={hard} className="num-hero block text-[1.625rem] leading-none" /></dd>
-                <dt className="mt-1 text-xs text-muted">hard sets</dt>
-              </div>
-            </div>
-          </dl>
         </Link>
 
-        <Card>
-          <SectionTitle
-            action={
-              <Link href="/body" transitionTypes={["drill-in"]} className="press -my-3 flex min-h-11 items-center gap-0.5 text-sm text-accent">
-                Details <ChevronRight aria-hidden className="size-4" />
-              </Link>
-            }
-          >
-            Today&apos;s food
-          </SectionTitle>
+        <Disclosure
+          id="home-food"
+          icon={<Utensils className="size-[1.125rem]" />}
+          title="Food today"
+          summary={
+            t ? (
+              <span className="tabular">
+                {Math.round(n?.kcal ?? 0).toLocaleString("en-GB")} / {t.kcal.toLocaleString("en-GB")} kcal · {Math.round(n?.proteinG ?? 0)} / {t.proteinG} g protein
+              </span>
+            ) : (
+              "Log your weight to get targets"
+            )
+          }
+        >
           {t ? (
             <>
               <div className="flex flex-col gap-4">
@@ -154,40 +140,38 @@ export default function Home() {
           ) : (
             <p className="text-muted">Log your weight to get targets.</p>
           )}
-        </Card>
+          <Link href="/body" transitionTypes={["drill-in"]} className="press -mb-2 flex min-h-11 items-center justify-between text-sm text-accent">
+            Body weight and full food log <ChevronRight aria-hidden className="size-4" />
+          </Link>
+        </Disclosure>
 
-        <Card>
-          <SectionTitle
-            action={
-              <Link href="/volume" transitionTypes={["drill-in"]} className="press -my-3 flex min-h-11 items-center gap-0.5 text-sm text-accent">
-                All muscles <ChevronRight aria-hidden className="size-4" />
-              </Link>
-            }
-          >
-            Needs work this week
-          </SectionTitle>
+        <Disclosure
+          id="home-muscles"
+          icon={<Dumbbell className="size-[1.125rem]" />}
+          title="Needs work this week"
+          summary={
+            needsWork.length ? (
+              needsWork.map(({ m }) => MUSCLE_LABEL[m]).join(", ")
+            ) : (
+              <span className="text-success">Every muscle has 10+ hard sets</span>
+            )
+          }
+        >
           {needsWork.length ? (
             <ul className="flex flex-col gap-4">
               {needsWork.map(({ m, sets }, i) => (
                 <li key={m}>
-                  <Link href="/volume" transitionTypes={["drill-in"]} className="press block" aria-label={`${MUSCLE_LABEL[m]}: ${sets} of ${VOLUME_BAND.min} sets`}>
-                    <Meter label={MUSCLE_LABEL[m]} unit="sets" value={sets} target={VOLUME_BAND.min} delay={i * 100} />
-                  </Link>
+                  <Meter label={MUSCLE_LABEL[m]} unit="sets" value={sets} target={VOLUME_BAND.min} delay={i * 100} />
                 </li>
               ))}
             </ul>
           ) : (
             <p className="text-success">Every muscle has 10+ hard sets this week. Nice.</p>
           )}
-        </Card>
-
-        <Link href="/body" transitionTypes={["drill-in"]} className="press card flex min-h-14 items-center gap-3 rounded-lg px-4">
-          <span className="grid size-8 place-items-center rounded-[9px] bg-accent/15">
-            <Scale aria-hidden className="size-[1.125rem] text-accent" />
-          </span>
-          <span className="flex-1 font-medium">Body weight and nutrition</span>
-          <ChevronRight aria-hidden className="size-5 text-subtle" />
-        </Link>
+          <Link href="/volume" transitionTypes={["drill-in"]} className="press -mb-2 mt-2 flex min-h-11 items-center justify-between text-sm text-accent">
+            All muscles <ChevronRight aria-hidden className="size-4" />
+          </Link>
+        </Disclosure>
       </div>
     </>
   );
@@ -307,7 +291,7 @@ function QuickAdd() {
             </button>
           </>
         ) : (
-          <span className="text-subtle">Rough estimates. Exact totals on the Body screen.</span>
+          <span className="text-subtle">Rough estimates.</span>
         )}
       </div>
     </div>

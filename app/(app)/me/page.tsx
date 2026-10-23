@@ -1,11 +1,11 @@
 "use client";
 
-import { Award, ChevronRight, Download, Flame, Lock, Medal, MessageSquarePlus, RotateCcw, Sparkles, Trophy } from "lucide-react";
+import { Award, ChevronRight, Download, Flame, Lock, Medal, MessageSquarePlus, RotateCcw, Sparkles, Target, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, PageHeader, SectionTitle } from "@/components/ui/bits";
+import { Disclosure, PageHeader, SectionTitle } from "@/components/ui/bits";
 import { CountUp } from "@/components/ui/motion";
 import { NumberField, Toggle } from "@/components/ui/fields";
 import { RirToggle } from "@/components/rir-toggle";
@@ -118,8 +118,12 @@ export default function Me() {
           </ul>
         </section>
 
-        <Card>
-          <SectionTitle>Goal and training</SectionTitle>
+        <Disclosure
+          id="me-goal"
+          icon={<Target className="size-[1.125rem]" />}
+          title="Goal and training"
+          summary={`${goalTitle(me.goal)} · ${experienceLabel(me.experience)} · ${me.sessionsPerWeek}× a week · target ${me.targetWeightKg} kg`}
+        >
           <div className="flex flex-col gap-5">
             <button
               type="button"
@@ -153,36 +157,43 @@ export default function Me() {
             </div>
             <RirToggle checked={me.rirEnabled} onChange={(rirEnabled) => s.updateProfile({ rirEnabled })} />
           </div>
-        </Card>
+        </Disclosure>
 
-        <Card>
-          <SectionTitle>Privacy</SectionTitle>
+        <Disclosure
+          id="me-privacy"
+          icon={<Lock className="size-[1.125rem]" />}
+          title="Privacy"
+          summary={
+            me.shareWeight || me.shareNutrition
+              ? `Sharing ${[me.shareWeight && "weight", me.shareNutrition && "nutrition"].filter(Boolean).join(" and ")} with your group`
+              : "Body data private · lifts shared with your group"
+          }
+        >
           <p className="mb-1 flex gap-2 text-sm text-muted">
             <Lock aria-hidden className="mt-0.5 size-4 shrink-0" /> Your lifts are shared with your group. Body data is private unless you turn these on.
           </p>
           <Toggle label="Share body weight" description="Group-mates can see your weight trend." checked={me.shareWeight} onChange={(shareWeight) => s.updateProfile({ shareWeight })} />
           <Toggle label="Share nutrition" description="Group-mates can see your daily calories and protein." checked={me.shareNutrition} onChange={(shareNutrition) => s.updateProfile({ shareNutrition })} />
-        </Card>
+        </Disclosure>
 
         <FriendsCard manage />
 
         <Link
           href="/feedback?from=/me"
           transitionTypes={["drill-in"]}
-          className="press card flex min-h-16 items-center gap-3 rounded-lg px-4 py-3"
+          className="press card flex min-h-14 items-center gap-3 rounded-lg px-4 py-2.5"
         >
           <span className="grid size-8 shrink-0 place-items-center rounded-[9px] bg-accent/15"><MessageSquarePlus aria-hidden className="size-[1.125rem] text-accent" /></span>
           <span className="flex-1">
             <span className="block text-base font-medium">Send feedback</span>
-            <span className="block text-sm text-subtle">Report a bug or suggest an idea, with screenshots</span>
+            <span className="block text-[0.8125rem] text-muted">Bugs and ideas, with screenshots</span>
           </span>
           <ChevronRight aria-hidden className="size-5 text-subtle" />
         </Link>
 
         <AppVersion />
 
-        <Card>
-          <SectionTitle>Your data</SectionTitle>
+        <Disclosure id="me-data" icon={<Download className="size-[1.125rem]" />} title="Your data" summary="Export a copy or reset">
           <p className="mb-3 text-sm text-muted">This prototype stores everything in this browser only. Updates to the app keep your data.</p>
           <div className="flex flex-col gap-2">
             <Button variant="secondary" onClick={exportData}>
@@ -192,7 +203,7 @@ export default function Me() {
               <RotateCcw aria-hidden className="size-5" /> Reset everything
             </Button>
           </div>
-        </Card>
+        </Disclosure>
       </div>
 
       <HelpMeChoose
