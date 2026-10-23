@@ -71,11 +71,11 @@ export default function Feed() {
       <div className="flex flex-col gap-6">
         {groups.map((g) => (
           <section key={g.label} aria-label={g.label}>
-            <h2 className="mb-3 flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-subtle">
+            <h2 className="mb-3 flex items-center gap-3 px-1 text-xs font-semibold uppercase tracking-[0.08em] text-subtle">
               {g.label}
               <span
                 aria-hidden
-                className="h-px flex-1 bg-gradient-to-r from-border to-transparent"
+                className="h-px flex-1 bg-white/[0.06]"
               />
             </h2>
             <ul className="stagger flex flex-col gap-3">
@@ -147,7 +147,7 @@ function FeedCard({ item: it, now, onComments }: { item: FeedItem; now: number; 
 
   return (
     <li
-      className={`relative touch-manipulation select-none rounded-lg p-4 ${it.kind === "pr" ? "border border-pr/40 bg-gradient-to-br from-pr/14 via-surface to-accent-2/10 shadow-[0_18px_40px_-24px_rgb(255_200_87/0.6)]" : "card"}`}
+      className={`relative touch-manipulation select-none rounded-lg p-4 ${it.kind === "pr" ? "card bg-[radial-gradient(80%_60%_at_100%_0%,rgb(255_200_87/0.10),transparent_70%)]" : "card"}`}
       onClick={(e) => {
         // Taps on buttons and the workout link are handled by those; anywhere else counts for double-tap.
         if ((e.target as HTMLElement).closest("button, a")) return;
@@ -155,21 +155,21 @@ function FeedCard({ item: it, now, onComments }: { item: FeedItem; now: number; 
       }}
     >
       <div className="flex items-center gap-3">
-        <span
-          className={`rounded-full p-[2px] ${it.kind === "pr" ? "bg-gradient-to-br from-pr to-accent-2" : "bg-gradient-to-br from-accent/70 to-accent-2/50"}`}
-        >
-          <Avatar name={name} you={it.userId === "me"} />
-        </span>
+        <Avatar name={name} you={it.userId === "me"} />
         <p className="flex-1 text-sm text-muted">
           <span className="font-semibold text-text">{it.userId === "me" ? "You" : name}</span>{" "}
           {it.kind === "pr" ? "hit a PR" : "finished a workout"} · {ago(it.at, now)}
         </p>
-        {it.kind === "pr" && <Trophy aria-hidden className="size-5 text-pr" />}
+        {it.kind === "pr" && (
+          <span className="flex items-center gap-1 rounded-full bg-pr/12 px-2 py-0.5 text-xs font-semibold text-pr">
+            <Trophy aria-hidden className="size-3.5" /> PR
+          </span>
+        )}
       </div>
 
       {it.kind === "pr" ? (
         <div className="mt-3">
-          <p className="font-display text-lg font-semibold">
+          <p className="text-base font-semibold">
             {def?.name}
             {it.pr.grip && <span className="text-muted"> · {gripTag(it.pr.exerciseId, it.pr.grip)}</span>}
           </p>
@@ -183,7 +183,7 @@ function FeedCard({ item: it, now, onComments }: { item: FeedItem; now: number; 
             )}
           </p>
           {def?.equipment === "barbell" && (
-            <div className="mt-3 rounded-md bg-black/20 py-2">
+            <div className="mt-3 rounded-md bg-white/[0.03] py-2">
               <PlateBar kg={it.pr.kg} />
             </div>
           )}
@@ -203,23 +203,23 @@ function FeedCard({ item: it, now, onComments }: { item: FeedItem; now: number; 
             e.preventDefault();
             onTap(e, () => router.push(`/workout/${it.workout.id}`, { transitionTypes: ["drill-in"] }));
           }}
-          className="press mt-3 block rounded-md bg-surface-raised/80 p-3"
+          className="press mt-3 block rounded-md bg-white/[0.035] p-3.5"
         >
           <span className="flex items-baseline justify-between gap-2">
-            <span className="font-display text-xl font-semibold">{it.workout.title}</span>
-            <span className="num-hero text-xl text-accent">
+            <span className="text-lg font-semibold">{it.workout.title}</span>
+            <span className="num-hero text-xl">
               {liftedKg(s, it.workout).toLocaleString("en-GB")}
               <span className="ml-0.5 text-sm not-italic text-muted">kg</span>
             </span>
           </span>
-          <span className="tabular block text-sm text-muted">
+          <span className="tabular mt-0.5 block text-[0.8125rem] text-muted">
             {it.workout.exercises.length} exercise{it.workout.exercises.length === 1 ? "" : "s"} · {hardSetsIn(s, it.workout)} hard sets
           </span>
-          <span className="mt-2 flex flex-wrap gap-1.5">
+          <span className="mt-3 flex flex-wrap gap-1.5">
             {[...new Set(it.workout.exercises.map((e) => ex.get(e.exerciseId)?.primary).filter(Boolean))]
               .slice(0, 4)
               .map((m) => (
-                <span key={m} className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-xs text-accent">
+                <span key={m} className="rounded-full bg-white/[0.06] px-2 py-0.5 text-xs text-muted">
                   {MUSCLE_LABEL[m!]}
                 </span>
               ))}
@@ -249,7 +249,7 @@ function FeedCard({ item: it, now, onComments }: { item: FeedItem; now: number; 
         >
           <Heart
             aria-hidden
-            className={`size-6 transition-[color,fill,scale] duration-200 ${liked ? "scale-110 fill-danger text-danger" : "text-muted"}`}
+            className={`size-[1.375rem] transition-[color,fill,scale] duration-200 ${liked ? "scale-110 fill-danger text-danger" : "text-muted"}`}
           />
           {bursts.map((b) => (
             <Heart
@@ -266,7 +266,7 @@ function FeedCard({ item: it, now, onComments }: { item: FeedItem; now: number; 
           aria-label={`Comments, ${commentCount}`}
           className="grid size-11 place-items-center rounded-full text-muted active:scale-90 transition-transform"
         >
-          <MessageCircle aria-hidden className="size-6" />
+          <MessageCircle aria-hidden className="size-[1.375rem]" />
         </button>
         <p className="flex-1 text-sm text-muted">
           {likeLine && <span key={likers.length} className="inline-block motion-safe:animate-bump">{likeLine}</span>}

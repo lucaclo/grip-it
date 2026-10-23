@@ -53,28 +53,28 @@ export default function Me() {
     <>
       <PageHeader title="Me" />
       <div className="stagger flex flex-col gap-4">
-        <section className="card-hero shine shine-soft relative overflow-hidden rounded-xl p-5">
+        <section className="card-hero relative overflow-hidden rounded-xl p-5">
           <div className="flex items-center gap-4">
-            <span className="rounded-full bg-gradient-to-br from-volt via-accent to-accent-2 p-[3px] shadow-glow">
-              <span className="grid size-16 place-items-center rounded-full bg-surface font-display text-3xl font-bold">{me.name.slice(0, 1)}</span>
+            <span className="rounded-full p-[2px] ring-1 ring-accent/40">
+              <span className="grid size-16 place-items-center rounded-full bg-accent/15 font-display text-3xl font-bold text-accent">{me.name.slice(0, 1)}</span>
             </span>
             <div className="flex-1">
-              <p className="font-display text-2xl font-semibold leading-tight">{me.name}</p>
-              <p className="text-sm text-text">
+              <p className="font-display text-[1.75rem] font-bold leading-tight tracking-[-0.01em]">{me.name}</p>
+              <p className="mt-0.5 text-sm text-muted">
                 {goalTitle(me.goal)} · {experienceLabel(me.experience)}
               </p>
             </div>
           </div>
-          <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
+          <dl className="mt-5 grid grid-cols-3 divide-x divide-white/[0.08] border-t border-white/[0.08] pt-4 text-center">
             {[
               ["Workouts", workouts.length],
               ["PRs", prs.length],
               ["Wk streak", streak],
             ].map(([k, v]) => (
-              <div key={k as string} className="flex flex-col-reverse rounded-md bg-black/25 p-2.5">
-                <dt className="text-xs text-text">{k}</dt>
+              <div key={k as string} className="flex flex-col-reverse gap-1">
+                <dt className="text-xs text-muted">{k}</dt>
                 <dd>
-                  <CountUp value={v as number} className="num-hero text-stat leading-none" />
+                  <CountUp value={v as number} className="num-hero text-[1.625rem] leading-none" />
                 </dd>
               </div>
             ))}
@@ -96,19 +96,19 @@ export default function Me() {
                   aria-hidden
                   className={`relative grid size-[4.5rem] place-items-center rounded-full ${
                     earned
-                      ? "bg-[conic-gradient(from_210deg,var(--color-pr),#fff3c4,var(--color-pr),#b8862a,var(--color-pr))] p-[3px] shadow-[0_8px_26px_-6px_rgb(255_200_87/0.55)]"
-                      : "p-[3px]"
+                      ? "bg-[conic-gradient(from_210deg,var(--color-pr),var(--color-text),var(--color-pr),var(--color-rank-bronze),var(--color-pr))] p-[2px]"
+                      : "p-[2px]"
                   }`}
                   style={
                     earned
                       ? undefined
-                      : { background: `conic-gradient(var(--color-accent) ${Math.min(1, have / need) * 360}deg, var(--color-surface-raised) 0deg)` }
+                      : { background: `conic-gradient(var(--color-accent) ${Math.min(1, have / need) * 360}deg, rgb(255 255 255 / 0.08) 0deg)` }
                   }
                 >
                   <span
-                    className={`grid size-full place-items-center rounded-full ${earned ? "bg-[radial-gradient(circle_at_35%_30%,#3a2c63,#1b1530)]" : "bg-surface"}`}
+                    className={`grid size-full place-items-center rounded-full ${earned ? "bg-surface-raised" : "bg-surface"}`}
                   >
-                    <Icon className={`size-7 ${earned ? "text-pr drop-shadow-[0_0_8px_rgb(255_200_87/0.6)]" : "text-subtle"}`} />
+                    <Icon className={`size-7 ${earned ? "text-pr" : "text-subtle"}`} strokeWidth={1.8} />
                   </span>
                 </span>
                 <span className={`text-sm font-medium leading-tight ${earned ? "" : "text-muted"}`}>{title}</span>
@@ -124,7 +124,7 @@ export default function Me() {
             <button
               type="button"
               onClick={() => setHelpOpen(true)}
-              className="press flex items-center gap-3 rounded-md border border-volt/30 bg-volt/8 p-3 text-left"
+              className="press flex items-center gap-3 rounded-md bg-volt/[0.07] p-3 text-left ring-1 ring-inset ring-volt/20"
             >
               <Sparkles aria-hidden className="size-5 shrink-0 text-volt" />
               <span className="flex-1">
@@ -171,9 +171,9 @@ export default function Me() {
           transitionTypes={["drill-in"]}
           className="press card flex min-h-16 items-center gap-3 rounded-lg px-4 py-3"
         >
-          <MessageSquarePlus aria-hidden className="size-6 text-accent" />
+          <span className="grid size-8 shrink-0 place-items-center rounded-[9px] bg-accent/15"><MessageSquarePlus aria-hidden className="size-[1.125rem] text-accent" /></span>
           <span className="flex-1">
-            <span className="block text-base">Send feedback</span>
+            <span className="block text-base font-medium">Send feedback</span>
             <span className="block text-sm text-subtle">Report a bug or suggest an idea, with screenshots</span>
           </span>
           <ChevronRight aria-hidden className="size-5 text-subtle" />

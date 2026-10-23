@@ -20,7 +20,7 @@ import { ExerciseSearch } from "@/components/workout/exercise-search";
 import { GripPicker } from "@/components/workout/grip-picker";
 import { HistoryList } from "@/components/workout/history-list";
 import { PlateBar } from "@/components/plate-bar";
-import { Plate3D } from "@/components/plate-3d";
+import { BarbellIcon } from "@/components/icons";
 import { RestTimer } from "@/components/workout/rest-timer";
 import {
   exerciseMap,
@@ -103,23 +103,28 @@ export default function LogPage() {
           title="Log"
           subtitle="Start a session, or open a past one to view or edit it."
         />
-        <div className="card-hero mb-6 flex flex-col items-center gap-3 rounded-xl px-5 py-6 text-center">
-          <Plate3D size={132} className="my-3" />
-          <p className="max-w-xs text-sm text-text">
-            Every set saves as you go. Close the app mid-session and pick up
-            right where you left off.
-          </p>
-          <Button size="lg" className="w-full" onClick={startWorkout}>
+        <div className="card-hero mb-7 rounded-xl p-5">
+          <div className="flex items-start gap-4">
+            <span className="grid size-12 shrink-0 place-items-center rounded-[14px] bg-accent/15 ring-1 ring-inset ring-accent/25">
+              <BarbellIcon aria-hidden className="size-6 text-accent" />
+            </span>
+            <div>
+              <p className="text-lg font-semibold leading-snug">New session</p>
+              <p className="mt-1 text-sm text-muted">
+                Every set saves as you go. Close the app mid-session and pick up
+                right where you left off.
+              </p>
+            </div>
+          </div>
+          <Button size="lg" className="mt-5 w-full" onClick={startWorkout}>
             Start workout
           </Button>
-          <p className="text-xs text-text">
+          <p className="mt-3 text-center text-xs text-subtle">
             Already trained? Start one, turn on Auto-tick and log it after the
             fact.
           </p>
         </div>
-        <h2 className="mb-3 text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-muted">
-          History
-        </h2>
+        <h2 className="sr-only">History</h2>
         <HistoryList />
       </>
     );
@@ -201,7 +206,7 @@ export default function LogPage() {
   return (
     <>
       {/* Slim bar pinned to the very top: time and totals on the left, Finish on the right. */}
-      <header className="glass sticky top-0 z-10 -mx-4 border-b border-white/8 px-4 pt-safe">
+      <header className="glass sticky top-0 z-10 -mx-4 border-b border-white/[0.06] px-4 pt-safe">
         <div className="flex min-h-14 items-center gap-3 py-1.5">
           <div className="min-w-0 flex-1">
             <p className="text-[0.6875rem] uppercase tracking-wide text-subtle">

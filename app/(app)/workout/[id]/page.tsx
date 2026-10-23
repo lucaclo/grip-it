@@ -56,27 +56,27 @@ export default function WorkoutSummary() {
 
       <Confetti fire={celebrate && prs.length > 0} />
       {prs.length > 0 && (
-        <section className="mb-4 rounded-xl bg-gradient-to-br from-pr via-[#ffb38a] to-accent-2 p-4 text-on-pr shadow-[0_14px_40px_-12px_rgb(255_200_87/0.6)] motion-safe:animate-pop" role="status">
+        <section className="card mb-4 rounded-xl border-pr/35 bg-[radial-gradient(90%_70%_at_0%_0%,rgb(255_200_87/0.16),transparent_70%)] p-5 motion-safe:animate-pop" role="status">
           <div className="flex items-center gap-2">
-            <Trophy aria-hidden className="size-6" />
-            <p className="font-display text-[1.75rem] font-bold tracking-[-0.01em]">
+            <span className="grid size-9 place-items-center rounded-[10px] bg-pr/15"><Trophy aria-hidden className="size-5 text-pr" /></span>
+            <p className="font-display text-[1.75rem] font-bold tracking-[-0.01em] text-pr">
               {prs.length} new PR{prs.length > 1 ? "s" : ""}!
             </p>
           </div>
-          <ul className="mt-2 flex flex-col gap-1">
+          <ul className="mt-4 flex flex-col gap-3 divide-y divide-white/[0.06]">
             {prs.map((p) => (
-              <li key={p.id} className="flex flex-col gap-2">
-                <span className="flex justify-between gap-2 text-base">
+              <li key={p.id} className="flex flex-col gap-2 pt-3 first:pt-0">
+                <span className="flex items-baseline justify-between gap-2 text-base font-medium">
                   <span>
                     {ex.get(p.exerciseId)?.name}
-                    {p.grip && <span className="opacity-80"> · {gripTag(p.exerciseId, p.grip)}</span>}
+                    {p.grip && <span className="text-muted"> · {gripTag(p.exerciseId, p.grip)}</span>}
                   </span>
-                  <span className="num-hero text-lg">
-                    {p.kg} × {p.reps} · e1RM {p.e1rm} kg
+                  <span className="num-hero shrink-0 text-lg">
+                    {p.kg} × {p.reps}<span className="ml-1.5 text-sm not-italic font-normal text-muted">e1RM {p.e1rm} kg</span>
                   </span>
                 </span>
                 {ex.get(p.exerciseId)?.equipment === "barbell" && (
-                  <span className="block rounded-md bg-bg/85 py-2">
+                  <span className="block rounded-md bg-white/[0.03] py-2">
                     <PlateBar kg={p.kg} />
                   </span>
                 )}
@@ -86,7 +86,7 @@ export default function WorkoutSummary() {
         </section>
       )}
 
-      <dl className="card-hero mb-4 grid grid-cols-3 divide-x divide-white/10 rounded-xl py-4 text-center">
+      <dl className="card mb-4 grid grid-cols-3 divide-x divide-white/[0.08] rounded-xl py-4 text-center">
         {(
           [
             ["Time", mins, " min"],
@@ -94,8 +94,8 @@ export default function WorkoutSummary() {
             ["Volume", liftedKg(s, w), " kg"],
           ] as const
         ).map(([k, v, unit]) => (
-          <div key={k} className="flex flex-col-reverse px-2">
-            <dt className="text-xs uppercase tracking-widest text-text">{k}</dt>
+          <div key={k} className="flex flex-col-reverse gap-1 px-2">
+            <dt className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-subtle">{k}</dt>
             <dd>
               <CountUp value={v} suffix={unit} duration={1100} className="num-hero text-2xl" />
             </dd>
@@ -118,8 +118,8 @@ export default function WorkoutSummary() {
       )}
 
       {mine && streak > 0 && (
-        <p className="mb-4 flex items-center gap-2 rounded-md bg-surface p-3">
-          <Flame aria-hidden className="size-5 text-accent" />
+        <p className="card mb-4 flex items-center gap-3 rounded-md p-3">
+          <span className="grid size-8 place-items-center rounded-[9px] bg-volt/12"><Flame aria-hidden className="size-[1.125rem] text-volt" /></span>
           <span>
             <span className="tabular font-semibold">{streak}-week</span> streak. Keep it going.
           </span>
