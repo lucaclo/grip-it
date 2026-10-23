@@ -14,7 +14,8 @@ import { FriendsCard } from "@/components/friends/friends-card";
 import { Sheet } from "@/components/ui/sheet";
 import { allPRs, streakOf, workoutsOf } from "@/lib/data/selectors";
 import { useStore } from "@/lib/data/store";
-import { photoFromFile } from "@/lib/avatar";
+import { openPhoto } from "@/lib/avatar";
+import { PhotoCropper } from "@/components/photo-cropper";
 import { ExperiencePicker, experienceLabel, GoalPicker, goalTitle, HelpMeChoose } from "@/components/goal-picker";
 
 export default function Me() {
@@ -241,6 +242,11 @@ function ProfilePhoto({ name }: { name: string }) {
   const input = useRef<HTMLInputElement>(null);
   const [menu, setMenu] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [picked, setPicked] = useState<{ img: HTMLImageElement; url: string } | null>(null);
+  function closeCropper() {
+    if (picked) URL.revokeObjectURL(picked.url);
+    setPicked(null);
+  }
   return (
     <>
       <button
@@ -264,7 +270,7 @@ function ProfilePhoto({ name }: { name: string }) {
           e.target.value = ""; // picking the same photo again still fires
           if (!file) return;
           try {
-            updateProfile({ photo: await photoFromFile(file) });
+            setPicked(await openPhoto(file)); // then position it in the circle
             setError(null);
           } catch (err) {
             setError(err instanceof Error ? err.message : "Couldn't use that photo.");
@@ -300,6 +306,14 @@ function ProfilePhoto({ name }: { name: string }) {
           <p className="mt-1 text-center text-xs text-subtle">Your photo stays on this phone for now.</p>
         </div>
       </Sheet>
+      <PhotoCropper
+        photo={picked}
+        onCancel={closeCropper}
+        onDone={(photo) => {
+          updateProfile({ photo });
+          closeCropper();
+        }}
+      />
     </>
   );
 }
