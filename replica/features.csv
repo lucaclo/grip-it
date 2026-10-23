@@ -1,50 +1,50 @@
 feature,area,priority,original,clone,notes
-Sign in with email magic link,onboarding,must,n/a,no,must be obvious and fast; handle link opened in a different browser; issue #14 #15
-Join a friend group from an invite link,onboarding,must,Strava clubs,no,issue #16 #17
-Add to Home Screen install guide for iOS Safari,onboarding,must,n/a,no,PWA install; issue #18
-Enter height weight age sex and optional body-fat %,onboarding,must,MacroFactor,proto,
-Choose goal hypertrophy strength or fat loss and switch later,onboarding,must,MacroFactor,proto,
-Set target weight and experience level,onboarding,must,MacroFactor/RP,proto,
-Compute kcal and protein targets with cited method,targets,must,MacroFactor,proto,Katch-McArdle if body fat known else Mifflin-St Jeor
-Give a realistic timeline and difficulty for the goal,targets,must,MacroFactor,proto,warn on unrealistic rate
-Start an empty workout,logging,must,Hevy,proto,
-Search exercises by name with muscle filter,logging,must,Hevy,proto,
-Log kg and reps per set and tick sets complete,logging,must,Hevy,proto,
-Prefill previous values for each set,logging,must,Hevy,proto,
-Optional RIR per set,logging,must,Fitbod/Hevy RPE,proto,toggle in settings
-Finish and save a workout with title and duration,logging,must,Hevy,proto,
-Active workout draft survives app close,logging,must,Hevy,proto,local storage plus server sync; issue #24 (server sync)
-Built-in library of ~80 exercises tagged primary and secondary muscle,library,must,Hevy,proto,seed data must be extendable
-Create a custom exercise,library,must,Hevy,proto,
-Detect PRs (e1RM weight reps) on save,progress,must,Hevy,proto,Epley e1RM
-Next-session suggestion per exercise (add kg / add rep / hold / deload),coaching,must,Fitbod,proto,rules engine
-Why sheet with research citation for each suggestion,coaching,must,none,proto,Grip It differentiator
-Weekly hard sets per muscle vs evidence range,coaching,must,RP/Hevy,proto,
-Log body weight,body,must,MacroFactor,proto,
-Weekly-average weight trend chart,body,must,MacroFactor,proto,
-Log daily kcal and protein totals,nutrition,must,MacroFactor simplified,proto,
-Leaderboard by % improvement over own baseline,compete,must,Hevy/Strava,proto,
-Leaderboard by DOTS relative strength,compete,must,powerlifting,proto,body weight stays server side
-Leaderboard by streak,compete,must,Hevy streaks,proto,
-Leaderboard by weekly hard sets,compete,must,RP,proto,
-Body weight and nutrition private by default,privacy,must,Strava privacy,proto,issue #53 (server RLS)
-Kilograms throughout,settings,must,Hevy,proto,lb not needed
-Weekly challenges within the group,compete,should,Strava,proto,
-Feed of friends' PRs and workouts,social,should,Hevy/Strava,proto,
-Reactions on feed items,social,should,Strava kudos,proto,
-Badges for PRs and streaks,fun,should,Strava trophies,proto,
-Flag improbable PR jumps,compete,should,none,proto,honour system plus flag
-Workout summary screen with streak and PRs,logging,should,Hevy,proto,
-Exercise history and e1RM chart,progress,should,Hevy,proto,
+Sign in with email magic link,onboarding,must,n/a,partial,replaced by silent anonymous Supabase sign-in on first invite/join (lib/sync.ts); no recovery on a new phone or if the home-screen app's storage is wiped; issue #14 #15
+Join a friend group from an invite link,onboarding,must,Strava clubs,yes,"app/invite/[code], joinGroup() in lib/sync.ts"
+Add to Home Screen install guide for iOS Safari,onboarding,must,n/a,yes,step-by-step on the invite page (invite-client.tsx); no guide for someone who opens the bare URL
+Enter height weight age sex and optional body-fat %,onboarding,must,MacroFactor,yes,
+Choose goal hypertrophy strength or fat loss and switch later,onboarding,must,MacroFactor,yes,
+Set target weight and experience level,onboarding,must,MacroFactor/RP,yes,
+Compute kcal and protein targets with cited method,targets,must,MacroFactor,yes,Katch-McArdle if body fat known else Mifflin-St Jeor
+Give a realistic timeline and difficulty for the goal,targets,must,MacroFactor,yes,warn on unrealistic rate
+Start an empty workout,logging,must,Hevy,yes,
+Search exercises by name with muscle filter,logging,must,Hevy,yes,
+Log kg and reps per set and tick sets complete,logging,must,Hevy,yes,
+Prefill previous values for each set,logging,must,Hevy,yes,
+Optional RIR per set,logging,must,Fitbod/Hevy RPE,yes,toggle in settings
+Finish and save a workout with title and duration,logging,must,Hevy,yes,
+Active workout draft survives app close,logging,must,Hevy,yes,local storage plus server sync; issue #24 (server sync)
+Built-in library of ~80 exercises tagged primary and secondary muscle,library,must,Hevy,yes,seed data must be extendable
+Create a custom exercise,library,must,Hevy,yes,
+Detect PRs (e1RM weight reps) on save,progress,must,Hevy,yes,Epley e1RM
+Next-session suggestion per exercise (add kg / add rep / hold / deload),coaching,must,Fitbod,yes,rules engine
+Why sheet with research citation for each suggestion,coaching,must,none,yes,Grip It differentiator
+Weekly hard sets per muscle vs evidence range,coaching,must,RP/Hevy,yes,
+Log body weight,body,must,MacroFactor,yes,
+Weekly-average weight trend chart,body,must,MacroFactor,yes,
+Log daily kcal and protein totals,nutrition,must,MacroFactor simplified,yes,
+Leaderboard by % improvement over own baseline,compete,must,Hevy/Strava,yes,
+Leaderboard by DOTS relative strength,compete,must,powerlifting,yes,body weight stays server side
+Leaderboard by streak,compete,must,Hevy streaks,yes,
+Leaderboard by weekly hard sets,compete,must,RP,yes,
+Body weight and nutrition private by default,privacy,must,Strava privacy,yes,never leaves the phone; only dots_score is uploaded (lib/sync.ts)
+Kilograms throughout,settings,must,Hevy,yes,lb not needed
+Weekly challenges within the group,compete,should,Strava,yes,
+Feed of friends' PRs and workouts,social,should,Hevy/Strava,yes,
+Reactions on feed items,social,should,Strava kudos,partial,local only; reactions are not synced to friends
+Badges for PRs and streaks,fun,should,Strava trophies,yes,
+Flag improbable PR jumps,compete,should,none,yes,honour system plus flag
+Workout summary screen with streak and PRs,logging,should,Hevy,yes,
+Exercise history and e1RM chart,progress,should,Hevy,yes,
 Enter your own plan or split (optional),plans,should,Hevy routines/RP,no,user has own regime; issue #68 #85
-Rest timer after completing a set,logging,should,Hevy,proto,
-Set types warm-up drop failure,logging,should,Hevy,proto,warm-ups excluded from hard sets
+Rest timer after completing a set,logging,should,Hevy,yes,
+Set types warm-up drop failure,logging,should,Hevy,yes,warm-ups excluded from hard sets
 Time-limited challenges (e.g. a month),compete,should,Strava,no,issue #100
-Profile with trophy case,social,should,Strava,proto,
+Profile with trophy case,social,should,Strava,yes,
 Leaderboard period switch week / month / all-time,compete,should,Strava,no,issue #69
-Unrealistic goal warning with proposed date,targets,should,MacroFactor,proto,
-Muscle volume body heatmap,coaching,should,Fitbod,proto,
-Recalculate targets when weight changes,targets,should,MacroFactor check-in,no,issue #70 #79
+Unrealistic goal warning with proposed date,targets,should,MacroFactor,yes,
+Muscle volume body heatmap,coaching,should,Fitbod,yes,
+Recalculate targets when weight changes,targets,should,MacroFactor check-in,yes,"myTargets() reads latestWeight(), so targets follow every weigh-in; no change history (targets snapshot table not ported)"
 Comments on feed items,social,could,Hevy,no,trash talk; issue #102
 Head-to-head weekly duels,compete,could,none,no,user said later
 Workout templates (Push/Pull/Legs),plans,could,Hevy/RP,no,optional; issue #85
@@ -52,7 +52,7 @@ Push notifications (friend beat your PR),notifications,could,Hevy,no,later; iOS 
 Import from Hevy or Strong CSV,import,could,Hevy/Strong export,no,later; issue #103
 Share workout card image,social,could,Hevy,no,issue #92
 Supersets,logging,could,Hevy,no,issue #101
-Plate calculator,logging,could,Hevy,proto,
+Plate calculator,logging,could,Hevy,yes,
 Progress photos,body,could,Hevy,no,storage cost
 Multiple groups per user,social,could,Strava clubs,no,one group is enough for MVP
 Post-session pump and soreness feedback,coaching,could,RP,no,issue #104
@@ -62,4 +62,4 @@ Food database and barcode scan,nutrition,skip,MacroFactor,skip,licensed data and
 GPS segments,compete,skip,Strava,skip,not a lifting feature
 Apple Health sync,integrations,skip,Fitbod,skip,PWA cannot access HealthKit
 Coach platform,coach,skip,Hevy Coach,skip,not needed for under 30 friends
-Grip variations per exercise (width and hand position) with muscle shifts and grip-aware targets and PRs,logging,should,none,proto,lib/science/grips.ts; cited; migration 0003 adds workout_exercises.grip
+Grip variations per exercise (width and hand position) with muscle shifts and grip-aware targets and PRs,logging,should,none,yes,lib/science/grips.ts; cited; migration 0003 adds workout_exercises.grip
